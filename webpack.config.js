@@ -33,7 +33,27 @@ module.exports = (env, argv) => {
           test: /\.js$/,
           exclude: /node_modules/,
           use: {
-            loader: 'babel-loader'
+            loader: 'babel-loader',
+            options: {
+              presets: [
+                [
+                  '@babel/preset-env',
+                  {
+                    modules: false,
+                    useBuiltIns: 'entry'
+                  }
+                ]
+              ],
+              plugins: [
+                '@babel/plugin-syntax-dynamic-import',
+                [
+                  '@babel/plugin-transform-runtime',
+                  {
+                    regenerator: true
+                  }
+                ]
+              ]
+            }
           }
         },
         {
@@ -65,6 +85,28 @@ module.exports = (env, argv) => {
             },
             'postcss-loader',
             'sass-loader'
+          ]
+        },
+        {
+          test: /\.(png|jpe?g|gif|svg|webp)$/i,
+          use: [
+            {
+              loader: 'file-loader',
+              options: {
+                name: 'img/[name].[hash].[ext]'
+              }
+            }
+          ]
+        },
+        {
+          test: /\.(ttf|eot|woff2?)$/i,
+          use: [
+            {
+              loader: 'file-loader',
+              options: {
+                name: 'fonts/[name].[ext]'
+              }
+            }
           ]
         }
       ]
