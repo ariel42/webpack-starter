@@ -8,7 +8,7 @@ This project makes no assumptions about any library that will or will not be use
 ### Features
 
 - Very simple way to start a clean web project with Webpack 4 benefits
-- Javascript modules support by Webpack (import/export, import(), require/module.exports)
+- Javascript modules support (import/export, dynamic import(), require/module.exports)
 - ES6 language support by Babel
 - Development server with hot reload
 - Builds efficient production code, with optimizations and minifications

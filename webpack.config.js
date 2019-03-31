@@ -3,7 +3,7 @@ const path = require('path');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const WebpackMd5Hash = require('webpack-md5-hash');
+//const WebpackMd5Hash = require('webpack-md5-hash');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const StyleLintPlugin = require('stylelint-webpack-plugin');
 
@@ -30,7 +30,7 @@ module.exports = (env, argv) => {
     module: {
       rules: [
         {
-          test: /\.js$/,
+          test: /\.m?js$/,
           exclude: /node_modules/,
           use: {
             loader: 'babel-loader',
@@ -40,18 +40,14 @@ module.exports = (env, argv) => {
                   '@babel/preset-env',
                   {
                     modules: false,
-                    useBuiltIns: 'entry'
+                    useBuiltIns: 'entry',
+                    corejs: 2
                   }
                 ]
               ],
               plugins: [
-                '@babel/plugin-syntax-dynamic-import',
-                [
-                  '@babel/plugin-transform-runtime',
-                  {
-                    regenerator: true
-                  }
-                ]
+                '@babel/plugin-transform-runtime',
+                '@babel/plugin-syntax-dynamic-import'
               ]
             }
           }
@@ -140,7 +136,7 @@ module.exports = (env, argv) => {
         template: './src/index.html',
         filename: 'index.html'
       }),
-      new WebpackMd5Hash(),
+      // new WebpackMd5Hash(),
       isDev &&
         new StyleLintPlugin({
           configFile: './stylelint.config.js',

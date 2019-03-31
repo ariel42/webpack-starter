@@ -1,3 +1,5 @@
+import './polyfills.js'
+
 import './scss/main.scss';
 import useableStyle from './scss/main.useable.scss';
 
