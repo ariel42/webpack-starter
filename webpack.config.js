@@ -25,7 +25,10 @@ module.exports = (env, argv) => {
       contentBase: path.join(__dirname, 'src'),
       watchContentBase: true,
       compress: true,
-      open: true
+      open: true,
+      headers: {
+        'Access-Control-Allow-Origin': '*'
+      }
     },
     module: {
       rules: [
@@ -41,12 +44,26 @@ module.exports = (env, argv) => {
                   {
                     modules: false,
                     useBuiltIns: 'entry',
-                    corejs: 2
+                    corejs: 2,
+                    targets: {
+                      browsers: [
+                        'last 2 Chrome versions',
+                        'not Chrome < 60',
+                        'last 2 Safari versions',
+                        'not Safari < 10.1',
+                        'last 2 iOS versions',
+                        'not iOS < 10.3',
+                        'last 2 Firefox versions',
+                        'not Firefox < 54',
+                        'last 2 Edge versions',
+                        'not Edge < 15'
+                      ]
+                    }
                   }
                 ]
               ],
               plugins: [
-                '@babel/plugin-transform-runtime',
+                // '@babel/plugin-transform-runtime',
                 '@babel/plugin-syntax-dynamic-import'
               ]
             }
@@ -146,5 +163,71 @@ module.exports = (env, argv) => {
     ].filter(Boolean) //removes all non-truthy values
   };
 
-  return config;
+  let legacyConfig = Object.assign({}, config);
+  // legacyConfig.entry = { mainLegacy: './src/index.js' };
+  legacyConfig.watch = false;
+  legacyConfig.output = Object.assign({}, config.output);
+  legacyConfig.output.filename = isDev
+    ? '[name]-legacy.[hash].js'
+    : '[name]-legacy.[chunkhash].js';
+  // if (!isDevServer) {
+  //   legacyConfig.plugins = config.plugins.slice(1); //removes CleanWebpackPlugin
+  // }
+  // legacyConfig.plugins = legacyConfig.plugins.filter(p => !(p instanceof HtmlWebpackPlugin));
+
+  legacyConfig.plugins = [];
+  legacyConfig.module = {
+    rules: config.module.rules.slice()
+  };
+  
+  legacyConfig.module.rules[0] = {
+    test: /\.m?js$/,
+    exclude: /node_modules/,
+    use: {
+      loader: 'babel-loader',
+      options: {
+        presets: [
+          [
+            '@babel/preset-env',
+            {
+              modules: false,
+              useBuiltIns: 'entry',
+              corejs: 2,
+              targets: {
+                browsers: [
+                  '>0.2%',
+                  'not dead',
+                  'not ie <= 8',
+                  'not op_mini all'
+                ]
+              }
+            }
+          ]
+        ],
+        plugins: [
+          // '@babel/plugin-transform-runtime',
+          '@babel/plugin-syntax-dynamic-import'
+        ]
+      }
+    }
+  };
+
+  legacyConfig.module.rules[1] = {
+    test: /\.scss$/,
+    exclude: /\.useable\.scss$/,
+    use: [
+      {
+        loader: 'style-loader',
+        options: { hmr: isDev, sourceMap: true }
+      },
+      {
+        loader: 'css-loader',
+        options: { modules: true, importLoaders: 1 }
+      },
+      'postcss-loader',
+      'sass-loader'
+    ]
+  };
+
+  return [config, legacyConfig];
 };
