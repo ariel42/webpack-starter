@@ -18,7 +18,7 @@
 
     <div>Hello, world!</div>
 
-    <script type="module" src="<%= htmlWebpackPlugin.files.chunks.main.entry %>"></script>
-
+    <script type="<%= htmlWebpackPlugin.options.isDev ? `application/javascript` : `module` %>" src="<%= htmlWebpackPlugin.files.chunks.main.entry %>"></script>
+    <%= htmlWebpackPlugin.options.isDev ? `` : `<script nomodule src="${'<'}%= htmlWebpackPlugin.files.chunks.mainLegacy.entry %${'>'}"></script>` %>
   </body>
 </html>

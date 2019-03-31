@@ -5,6 +5,7 @@ const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 //const WebpackMd5Hash = require('webpack-md5-hash');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
+const DelayPlugin = require('webpack-delay-plugin');
 const StyleLintPlugin = require('stylelint-webpack-plugin');
 
 module.exports = (env, argv) => {
@@ -12,7 +13,8 @@ module.exports = (env, argv) => {
   const isDevServer = !!process.argv.find(v =>
     v.includes('webpack-dev-server')
   );
-  const buildPath = path.resolve(__dirname, isDev ? 'build-dev' : 'build');
+  const buildFolderName = isDev ? 'build-dev' : 'build';
+  const buildPath = path.resolve(__dirname, buildFolderName);
 
   let config = {
     entry: { main: './src/index.js' },
@@ -46,24 +48,31 @@ module.exports = (env, argv) => {
                     useBuiltIns: 'entry',
                     corejs: 2,
                     targets: {
-                      browsers: [
-                        'last 2 Chrome versions',
-                        'not Chrome < 60',
-                        'last 2 Safari versions',
-                        'not Safari < 10.1',
-                        'last 2 iOS versions',
-                        'not iOS < 10.3',
-                        'last 2 Firefox versions',
-                        'not Firefox < 54',
-                        'last 2 Edge versions',
-                        'not Edge < 15'
-                      ]
+                      browsers: isDev
+                        ? [
+                            '>0.2%',
+                            'not dead',
+                            'not ie <= 8',
+                            'not op_mini all'
+                          ]
+                        : [
+                            'last 2 Chrome versions',
+                            'not Chrome < 60',
+                            'last 2 Safari versions',
+                            'not Safari < 10.1',
+                            'last 2 iOS versions',
+                            'not iOS < 10.3',
+                            'last 2 Firefox versions',
+                            'not Firefox < 54',
+                            'last 2 Edge versions',
+                            'not Edge < 15'
+                          ]
                     }
                   }
                 ]
               ],
               plugins: [
-                // '@babel/plugin-transform-runtime',
+                '@babel/plugin-transform-runtime',
                 '@babel/plugin-syntax-dynamic-import'
               ]
             }
@@ -138,20 +147,12 @@ module.exports = (env, argv) => {
         }),
       !isDev && new OptimizeCSSAssetsPlugin({}),
       new HtmlWebpackPlugin({
+        isDev: isDev,
         inject: false,
         hash: isDev,
-        minify: isDev
-          ? {}
-          : {
-              collapseWhitespace: true,
-              removeComments: true,
-              removeRedundantAttributes: true,
-              removeScriptTypeAttributes: true,
-              removeStyleLinkTypeAttributes: true,
-              useShortDoctype: true
-            },
+        minify: {},
         template: './src/index.html',
-        filename: 'index.html'
+        filename: isDev ? 'index.html' : 'temp.html'
       }),
       // new WebpackMd5Hash(),
       isDev &&
@@ -163,23 +164,16 @@ module.exports = (env, argv) => {
     ].filter(Boolean) //removes all non-truthy values
   };
 
+  //legacyConfig used only for production build, for building the bigger bundles just for legacy browsers
   let legacyConfig = Object.assign({}, config);
-  // legacyConfig.entry = { mainLegacy: './src/index.js' };
-  legacyConfig.watch = false;
-  legacyConfig.output = Object.assign({}, config.output);
-  legacyConfig.output.filename = isDev
-    ? '[name]-legacy.[hash].js'
-    : '[name]-legacy.[chunkhash].js';
-  // if (!isDevServer) {
-  //   legacyConfig.plugins = config.plugins.slice(1); //removes CleanWebpackPlugin
-  // }
-  // legacyConfig.plugins = legacyConfig.plugins.filter(p => !(p instanceof HtmlWebpackPlugin));
 
-  legacyConfig.plugins = [];
+  legacyConfig.entry = { mainLegacy: './src/index.js' };
+  legacyConfig.watch = false;
+
   legacyConfig.module = {
     rules: config.module.rules.slice()
   };
-  
+
   legacyConfig.module.rules[0] = {
     test: /\.m?js$/,
     exclude: /node_modules/,
@@ -205,7 +199,7 @@ module.exports = (env, argv) => {
           ]
         ],
         plugins: [
-          // '@babel/plugin-transform-runtime',
+          '@babel/plugin-transform-runtime',
           '@babel/plugin-syntax-dynamic-import'
         ]
       }
@@ -217,8 +211,8 @@ module.exports = (env, argv) => {
     exclude: /\.useable\.scss$/,
     use: [
       {
-        loader: 'style-loader',
-        options: { hmr: isDev, sourceMap: true }
+        loader: 'ignore-loader',
+        options: { hmr: false, sourceMap: true }
       },
       {
         loader: 'css-loader',
@@ -229,5 +223,25 @@ module.exports = (env, argv) => {
     ]
   };
 
-  return [config, legacyConfig];
+  legacyConfig.plugins = [
+    new DelayPlugin({
+      delay: 5000 // delay in ms
+    }),
+    new HtmlWebpackPlugin({
+      inject: false,
+      hash: false,
+      minify: {
+        collapseWhitespace: true,
+        removeComments: true,
+        removeRedundantAttributes: true,
+        removeScriptTypeAttributes: true,
+        removeStyleLinkTypeAttributes: true,
+        useShortDoctype: true
+      },
+      template: `${buildFolderName}/temp.html`,
+      filename: 'index.html'
+    })
+  ];
+
+  return isDev ? config : [config, legacyConfig];
 };
