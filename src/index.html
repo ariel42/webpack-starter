@@ -10,7 +10,12 @@
 
     <title>Webpack Boilerplate</title>
 
-    <link rel="stylesheet" href="<%=htmlWebpackPlugin.files.chunks.main.css %>">
+    <!-- Please keep the following lines here: -->
+    <%= !htmlWebpackPlugin.options.isDev ? 
+      `<link rel="stylesheet" href="${htmlWebpackPlugin.files.chunks.main.css}">` 
+      : `` 
+    %>
+    <!-- Thank you -->
   </head>
 
   <body>
@@ -18,7 +23,13 @@
 
     <div>Hello, world!</div>
 
-    <script type="<%= htmlWebpackPlugin.options.isDev ? `application/javascript` : `module` %>" src="<%= htmlWebpackPlugin.files.chunks.main.entry %>"></script>
-    <%= htmlWebpackPlugin.options.isDev ? `` : `<script nomodule src="${'<'}%= htmlWebpackPlugin.files.chunks.mainLegacy.entry %${'>'}"></script>` %>
+    <!-- Please keep the following lines here: -->
+    <script type="<%= htmlWebpackPlugin.options.isDev ? `application/javascript` : `module` %>" 
+      src="<%= htmlWebpackPlugin.files.chunks.main.entry %>"></script>
+    <%= !htmlWebpackPlugin.options.isDev ? 
+      `<script nomodule src="${'<'}%= htmlWebpackPlugin.files.chunks.mainLegacy.entry %${'>'}"></script>` 
+      : `` 
+    %>
+    <!-- Thank you -->
   </body>
 </html>

@@ -3,13 +3,11 @@ const path = require('path');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-//const WebpackMd5Hash = require('webpack-md5-hash');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
-const DelayPlugin = require('webpack-delay-plugin');
 const StyleLintPlugin = require('stylelint-webpack-plugin');
 
 module.exports = (env, argv) => {
-  const isDev = argv.mode === 'development';
+  const isDev = argv.mode !== 'production';
   const isDevServer = !!process.argv.find(v =>
     v.includes('webpack-dev-server')
   );
@@ -17,6 +15,7 @@ module.exports = (env, argv) => {
   const buildPath = path.resolve(__dirname, buildFolderName);
 
   let config = {
+    mode: isDev ? 'development' : 'production', //if not set by cli
     entry: { main: './src/index.js' },
     output: {
       path: buildPath,
@@ -154,7 +153,6 @@ module.exports = (env, argv) => {
         template: './src/index.html',
         filename: isDev ? 'index.html' : 'temp.html'
       }),
-      // new WebpackMd5Hash(),
       isDev &&
         new StyleLintPlugin({
           configFile: './stylelint.config.js',
@@ -163,6 +161,10 @@ module.exports = (env, argv) => {
         })
     ].filter(Boolean) //removes all non-truthy values
   };
+
+  if (argv.stage !== 'legacy') {
+    return config;
+  }
 
   //legacyConfig used only for production build, for building the bigger bundles just for legacy browsers
   let legacyConfig = Object.assign({}, config);
@@ -224,9 +226,6 @@ module.exports = (env, argv) => {
   };
 
   legacyConfig.plugins = [
-    new DelayPlugin({
-      delay: 5000 // delay in ms
-    }),
     new HtmlWebpackPlugin({
       inject: false,
       hash: false,
@@ -243,5 +242,5 @@ module.exports = (env, argv) => {
     })
   ];
 
-  return isDev ? config : [config, legacyConfig];
+  return legacyConfig;
 };

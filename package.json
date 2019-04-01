@@ -6,8 +6,10 @@
   "author": "Margarita Obraztsova <marharyta.obraztsova@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "start": "SET NODE_ENV=development&& webpack-dev-server --config webpack.config.js --mode=development --hot",
-    "build": "SET NODE_ENV=production&& webpack --config webpack.config.js --mode production",
+    "start": "SET NODE_ENV=development&& webpack-dev-server --config webpack.config.js --mode development --hot",
+    "build-stage-1": "webpack --config webpack.config.js --mode production",
+    "build-stage-2": "webpack --config webpack.config.js --mode production --stage=legacy",
+    "build": "SET NODE_ENV=production&& npm run build-stage-1&& npm run build-stage-2",
     "build-dev": "SET NODE_ENV=development&& webpack --config webpack.config.js --mode development"
   },
   "devDependencies": {
@@ -35,7 +37,6 @@
     "stylelint-webpack-plugin": "^0.10.5",
     "webpack": "^4.29.6",
     "webpack-cli": "^3.1.2",
-    "webpack-delay-plugin": "^1.0.1",
     "webpack-dev-server": "^3.1.4"
   },
   "dependencies": {
@@ -43,7 +44,6 @@
     "@babel/runtime": "^7.4.2",
     "clean-webpack-plugin": "^1.0.0",
     "core-js": "^2.6.5",
-    "webpack-md5-hash": "^0.0.6",
     "webpack-node-externals": "^1.7.2"
   }
 }
