@@ -6,6 +6,26 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const StyleLintPlugin = require('stylelint-webpack-plugin');
 
+const legacyBrowsers = [
+  '>0.2%',
+  'not dead',
+  'not op_mini all',
+  'Firefox ESR',
+  'ie >= 9'
+];
+
+const modernBrowsers = [
+  'Chrome >= 61',
+  'ChromeAndroid >= 61',
+  'Safari >= 11',
+  'iOS >= 11',
+  'Firefox >= 60',
+  'FirefoxAndroid >= 60',
+  'Opera >= 48',
+  'OperaMobile >= 48',
+  'Edge >= 16'
+];
+
 module.exports = (env, argv) => {
   const isDev = argv.mode !== 'production';
   const isDevServer = !!process.argv.find(v =>
@@ -19,7 +39,7 @@ module.exports = (env, argv) => {
     entry: { main: './src/index.js' },
     output: {
       path: buildPath,
-      filename: isDev ? '[name].[hash].js' : '[name].[chunkhash].js'
+      filename: isDev ? '[name].[hash:8].js' : '[name].[chunkhash:8].js'
     },
     devtool: isDev ? 'eval-source-map' : 'source-map',
     devServer: {
@@ -27,6 +47,7 @@ module.exports = (env, argv) => {
       watchContentBase: true,
       compress: true,
       open: true,
+      port: 4242,
       headers: {
         'Access-Control-Allow-Origin': '*'
       }
@@ -45,33 +66,15 @@ module.exports = (env, argv) => {
                   {
                     modules: false,
                     useBuiltIns: 'entry',
-                    corejs: 2,
+                    corejs: 3,
                     targets: {
-                      browsers: isDev
-                        ? [
-                            '>0.2%',
-                            'not dead',
-                            'not ie <= 8',
-                            'not op_mini all'
-                          ]
-                        : [
-                            'last 2 Chrome versions',
-                            'not Chrome < 60',
-                            'last 2 Safari versions',
-                            'not Safari < 10.1',
-                            'last 2 iOS versions',
-                            'not iOS < 10.3',
-                            'last 2 Firefox versions',
-                            'not Firefox < 54',
-                            'last 2 Edge versions',
-                            'not Edge < 15'
-                          ]
+                      browsers: isDev ? legacyBrowsers : modernBrowsers
                     }
                   }
                 ]
               ],
               plugins: [
-                '@babel/plugin-transform-runtime',
+                ['@babel/plugin-transform-runtime', { corejs: 3 }],
                 '@babel/plugin-syntax-dynamic-import'
               ]
             }
@@ -114,7 +117,7 @@ module.exports = (env, argv) => {
             {
               loader: 'file-loader',
               options: {
-                name: 'img/[name].[hash].[ext]'
+                name: 'img/[name].[hash:8].[ext]'
               }
             }
           ]
@@ -142,7 +145,7 @@ module.exports = (env, argv) => {
       !isDevServer && new CleanWebpackPlugin(buildPath, {}),
       !isDev &&
         new MiniCssExtractPlugin({
-          filename: 'style.[contenthash].css'
+          filename: 'style.[contenthash:8].css'
         }),
       !isDev && new OptimizeCSSAssetsPlugin({}),
       new HtmlWebpackPlugin({
@@ -188,20 +191,15 @@ module.exports = (env, argv) => {
             {
               modules: false,
               useBuiltIns: 'entry',
-              corejs: 2,
+              corejs: 3,
               targets: {
-                browsers: [
-                  '>0.2%',
-                  'not dead',
-                  'not ie <= 8',
-                  'not op_mini all'
-                ]
+                browsers: legacyBrowsers
               }
             }
           ]
         ],
         plugins: [
-          '@babel/plugin-transform-runtime',
+          ['@babel/plugin-transform-runtime', { corejs: 3 }],
           '@babel/plugin-syntax-dynamic-import'
         ]
       }
