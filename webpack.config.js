@@ -31,12 +31,16 @@ module.exports = (env, argv) => {
   const isDevServer = !!process.argv.find(v =>
     v.includes('webpack-dev-server')
   );
+  const isLegacyStage = argv.stage === 'legacy';
   const buildFolderName = isDev ? 'build-dev' : 'build';
   const buildPath = path.resolve(__dirname, buildFolderName);
 
   let config = {
     mode: isDev ? 'development' : 'production', //if not set by cli
-    entry: { main: './src/index.js' },
+    //dev mode uses always legacy es5 polyfills, so it is possible to develop also on legacy browsers
+    entry: isDev
+      ? { 'main-es5': './src/index.js' }
+      : { main: './src/index.js' },
     output: {
       path: buildPath,
       filename: isDev ? '[name].[hash:8].js' : '[name].[chunkhash:8].js'
@@ -141,6 +145,26 @@ module.exports = (env, argv) => {
       //poll: 1000, //uncomment if necessary for better HMR file change detection
       ignored: /node_modules/
     },
+    optimization: {
+      splitChunks: {
+        cacheGroups: {
+          polyfills: {
+            chunks: 'all',
+            enforce: true,
+            priority: 100,
+            test: /node_modules[\\/](@babel|core-js)/,
+            name: isDev || isLegacyStage ? 'polyfills-es5' : 'polyfills'
+          },
+          vendors: {
+            chunks: 'all',
+            enforce: true,
+            priority: 90,
+            test: /node_modules/,
+            name: isDev || isLegacyStage ? 'vendors-es5' : 'vendors'
+          }
+        }
+      }
+    },
     plugins: [
       !isDevServer && new CleanWebpackPlugin(buildPath, {}),
       !isDev &&
@@ -153,6 +177,7 @@ module.exports = (env, argv) => {
         inject: false,
         hash: isDev,
         minify: {},
+        chunksSortMode: 'dependency',
         template: './src/index.html',
         filename: isDev ? 'index.html' : 'temp.html'
       }),
@@ -165,14 +190,14 @@ module.exports = (env, argv) => {
     ].filter(Boolean) //removes all non-truthy values
   };
 
-  if (argv.stage !== 'legacy') {
+  if (!isLegacyStage) {
     return config;
   }
 
   //legacyConfig used only for production build, for building the bigger bundles just for legacy browsers
   let legacyConfig = Object.assign({}, config);
 
-  legacyConfig.entry = { mainLegacy: './src/index.js' };
+  legacyConfig.entry = { 'main-es5': './src/index.js' };
   legacyConfig.watch = false;
 
   legacyConfig.module = {
@@ -235,6 +260,7 @@ module.exports = (env, argv) => {
         removeStyleLinkTypeAttributes: true,
         useShortDoctype: true
       },
+      chunksSortMode: 'dependency',
       template: `${buildFolderName}/temp.html`,
       filename: 'index.html'
     })

@@ -7,29 +7,37 @@
     <meta name="author" content="Your Name" />
     <meta name="description" content="Webpack Boilerplate" />
     <meta name="theme-color" content="#2980b9" />
-
     <title>Webpack Boilerplate</title>
 
-    <!-- Please keep the following lines here: -->
-    <%= !htmlWebpackPlugin.options.isDev ? 
-      `<link rel="stylesheet" href="${htmlWebpackPlugin.files.chunks.main.css}">` 
-      : `` 
-    %>
-    <!-- Thank you -->
+    <% // Please add your code above, and keep the following lines here: %>
+
+    <% if (!htmlWebpackPlugin.options.isDev) { %>
+      <% for (var css in htmlWebpackPlugin.files.css) { %>
+        <link rel="stylesheet" href="<%= htmlWebpackPlugin.files.css[css] %>">
+      <% } %>
+    <% } %>
+
+    <% // Thank you %>
   </head>
 
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
-
     <div>Hello, world!</div>
 
-    <!-- Please keep the following lines here: -->
-    <script type="<%= htmlWebpackPlugin.options.isDev ? `application/javascript` : `module` %>" 
-      src="<%= htmlWebpackPlugin.files.chunks.main.entry %>"></script>
+    <% // Please add your code above, and keep the following lines here: %>
+
+    <% for (var chunk in htmlWebpackPlugin.files.chunks) { %>
+      <%= `<script type="${htmlWebpackPlugin.options.isDev ? 'application/javascript' : 'module'}" 
+            src="${htmlWebpackPlugin.files.chunks[chunk].entry}"></script>` %>
+    <% } %>
     <%= !htmlWebpackPlugin.options.isDev ? 
-      `<script nomodule src="${'<'}%= htmlWebpackPlugin.files.chunks.mainLegacy.entry %${'>'}"></script>` 
+      `${'<'}% for (var chunk in htmlWebpackPlugin.files.chunks) { %${'>'}
+        ${'<'}%= \`${'<'}script nomodule type="application/javascript" 
+                         src="${'$'}{htmlWebpackPlugin.files.chunks[chunk].entry}"${'>'}${'<'}/script${'>'}\` %${'>'}
+        ${'<'}% } %${'>'}`
       : `` 
     %>
-    <!-- Thank you -->
+
+    <% // Thank you %>
   </body>
 </html>
