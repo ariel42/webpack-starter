@@ -6,15 +6,9 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const StyleLintPlugin = require('stylelint-webpack-plugin');
 
-const legacyBrowsers = [
-  '>0.2%',
-  'not dead',
-  'not op_mini all',
-  'Firefox ESR',
-  'ie >= 9'
-];
-
-const modernBrowsers = [
+//modern browsers that support es6 syntax and <script type=module / nomodule>,
+//and since they are modern they also need less polyfills
+const es6Browsers = [
   'Chrome >= 61',
   'ChromeAndroid >= 61',
   'Safari >= 11',
@@ -26,21 +20,35 @@ const modernBrowsers = [
   'Edge >= 16'
 ];
 
+//both modern and legacy browsers that support normal es5, and need more polyfills beacuse of the legacy browsers
+const es5Browsers = [
+  '>0.2%',
+  'not dead',
+  'not op_mini all',
+  'Firefox ESR',
+  'ie >= 9'
+];
+
 module.exports = (env, argv) => {
-  const isDev = argv.mode !== 'production';
+  const isProd = argv.mode === 'production';
+  const isDev = !isProd;
   const isDevServer = !!process.argv.find(v =>
     v.includes('webpack-dev-server')
   );
-  const isLegacyStage = argv.stage === 'legacy';
+
+  const isEs6 = argv.es == 6;
+  const willHave2ndStage = argv.stage == 1;
+  const is2ndStage = argv.stage == 2;
+
   const buildFolderName = isDev ? 'build-dev' : 'build';
   const buildPath = path.resolve(__dirname, buildFolderName);
 
   let config = {
     mode: isDev ? 'development' : 'production', //if not set by cli
     //dev mode uses always legacy es5 polyfills, so it is possible to develop also on legacy browsers
-    entry: isDev
-      ? { 'main-es5': './src/index.js' }
-      : { main: './src/index.js' },
+    entry: isEs6
+      ? { main: './src/index.js' }
+      : { 'main-es5': './src/index.js' },
     output: {
       path: buildPath,
       filename: isDev ? '[name].[hash:8].js' : '[name].[chunkhash:8].js'
@@ -72,7 +80,7 @@ module.exports = (env, argv) => {
                     useBuiltIns: 'entry',
                     corejs: 3,
                     targets: {
-                      browsers: isDev ? legacyBrowsers : modernBrowsers
+                      browsers: isEs6 ? es6Browsers : es5Browsers
                     }
                   }
                 ]
@@ -153,33 +161,35 @@ module.exports = (env, argv) => {
             enforce: true,
             priority: 100,
             test: /node_modules[\\/](@babel|core-js)/,
-            name: isDev || isLegacyStage ? 'polyfills-es5' : 'polyfills'
+            name: isEs6 ? 'polyfills' : 'polyfills-es5'
           },
           vendors: {
             chunks: 'all',
             enforce: true,
             priority: 90,
             test: /node_modules/,
-            name: isDev || isLegacyStage ? 'vendors-es5' : 'vendors'
+            name: isEs6 ? 'vendors' : 'vendors-es5'
           }
         }
       }
     },
     plugins: [
-      !isDevServer && new CleanWebpackPlugin(buildPath, {}),
-      !isDev &&
+      isProd && new CleanWebpackPlugin(buildPath, {}),
+      isProd &&
         new MiniCssExtractPlugin({
           filename: 'style.[contenthash:8].css'
         }),
-      !isDev && new OptimizeCSSAssetsPlugin({}),
+      isProd && new OptimizeCSSAssetsPlugin({}),
       new HtmlWebpackPlugin({
-        isDev: isDev,
+        isProd: isProd,
+        isEs6: isEs6,
+        willHave2ndStage: willHave2ndStage,
         inject: false,
         hash: isDev,
         minify: {},
         chunksSortMode: 'dependency',
         template: './src/index.html',
-        filename: isDev ? 'index.html' : 'temp.html'
+        filename: willHave2ndStage ? 'temp.html' : 'index.html'
       }),
       isDev &&
         new StyleLintPlugin({
@@ -190,21 +200,21 @@ module.exports = (env, argv) => {
     ].filter(Boolean) //removes all non-truthy values
   };
 
-  if (!isLegacyStage) {
+  if (!is2ndStage) {
     return config;
   }
 
-  //legacyConfig used only for production build, for building the bigger bundles just for legacy browsers
-  let legacyConfig = Object.assign({}, config);
+  //if we are here build production es5 bundles, that are larger but supported also by legacy browsers
+  let stage2Config = Object.assign({}, config);
 
-  legacyConfig.entry = { 'main-es5': './src/index.js' };
-  legacyConfig.watch = false;
+  stage2Config.entry = { 'main-es5': './src/index.js' };
+  stage2Config.watch = false;
 
-  legacyConfig.module = {
+  stage2Config.module = {
     rules: config.module.rules.slice()
   };
 
-  legacyConfig.module.rules[0] = {
+  stage2Config.module.rules[0] = {
     test: /\.m?js$/,
     exclude: /node_modules/,
     use: {
@@ -218,7 +228,7 @@ module.exports = (env, argv) => {
               useBuiltIns: 'entry',
               corejs: 3,
               targets: {
-                browsers: legacyBrowsers
+                browsers: es5Browsers
               }
             }
           ]
@@ -231,7 +241,7 @@ module.exports = (env, argv) => {
     }
   };
 
-  legacyConfig.module.rules[1] = {
+  stage2Config.module.rules[1] = {
     test: /\.scss$/,
     exclude: /\.useable\.scss$/,
     use: [
@@ -248,7 +258,7 @@ module.exports = (env, argv) => {
     ]
   };
 
-  legacyConfig.plugins = [
+  stage2Config.plugins = [
     new HtmlWebpackPlugin({
       inject: false,
       hash: false,
@@ -256,7 +266,7 @@ module.exports = (env, argv) => {
         collapseWhitespace: true,
         removeComments: true,
         removeRedundantAttributes: true,
-        removeScriptTypeAttributes: true,
+        removeScriptTypeAttributes: false,
         removeStyleLinkTypeAttributes: true,
         useShortDoctype: true
       },
@@ -266,5 +276,5 @@ module.exports = (env, argv) => {
     })
   ];
 
-  return legacyConfig;
+  return stage2Config;
 };

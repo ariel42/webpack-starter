@@ -6,9 +6,11 @@
   "license": "MIT",
   "scripts": {
     "start": "SET NODE_ENV=development&& webpack-dev-server --config webpack.config.js --mode development --hot",
-    "build-stage-1": "webpack --config webpack.config.js --mode production",
-    "build-stage-2": "webpack --config webpack.config.js --mode production --stage=legacy",
-    "build": "SET NODE_ENV=production&& npm run build-stage-1&& npm run build-stage-2",
+    "build": "SET NODE_ENV=production&& npm run build-stage1-es6&& npm run build-stage2-es5",
+    "build-stage1-es6": "webpack --config webpack.config.js --mode production --stage=1 --es=6",
+    "build-stage2-es5": "webpack --config webpack.config.js --mode production --stage=2",
+    "build-es5-only": "SET NODE_ENV=production&& webpack --config webpack.config.js --mode production",
+    "build-es6-only": "SET NODE_ENV=production&& webpack --config webpack.config.js --mode production --es=6",
     "build-dev": "SET NODE_ENV=development&& webpack --config webpack.config.js --mode development"
   },
   "devDependencies": {

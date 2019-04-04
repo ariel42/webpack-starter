@@ -11,7 +11,7 @@
 
     <% // Please add your code above, and keep the following lines here: %>
 
-    <% if (!htmlWebpackPlugin.options.isDev) { %>
+    <% if (htmlWebpackPlugin.options.isProd) { %>
       <% for (var css in htmlWebpackPlugin.files.css) { %>
         <link rel="stylesheet" href="<%= htmlWebpackPlugin.files.css[css] %>">
       <% } %>
@@ -27,10 +27,10 @@
     <% // Please add your code above, and keep the following lines here: %>
 
     <% for (var chunk in htmlWebpackPlugin.files.chunks) { %>
-      <%= `<script type="${htmlWebpackPlugin.options.isDev ? 'application/javascript' : 'module'}" 
+      <%= `<script type="${htmlWebpackPlugin.options.isEs6 ? 'module' : 'application/javascript' }" 
             src="${htmlWebpackPlugin.files.chunks[chunk].entry}"></script>` %>
     <% } %>
-    <%= !htmlWebpackPlugin.options.isDev ? 
+    <%= htmlWebpackPlugin.options.willHave2ndStage ? 
       `${'<'}% for (var chunk in htmlWebpackPlugin.files.chunks) { %${'>'}
         ${'<'}%= \`${'<'}script nomodule type="application/javascript" 
                          src="${'$'}{htmlWebpackPlugin.files.chunks[chunk].entry}"${'>'}${'<'}/script${'>'}\` %${'>'}
