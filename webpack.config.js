@@ -85,10 +85,7 @@ module.exports = (env, argv) => {
                   }
                 ]
               ],
-              plugins: [
-                ['@babel/plugin-transform-runtime', { corejs: 3 }],
-                '@babel/plugin-syntax-dynamic-import'
-              ]
+              plugins: ['@babel/plugin-syntax-dynamic-import']
             }
           }
         },
@@ -233,10 +230,7 @@ module.exports = (env, argv) => {
             }
           ]
         ],
-        plugins: [
-          ['@babel/plugin-transform-runtime', { corejs: 3 }],
-          '@babel/plugin-syntax-dynamic-import'
-        ]
+        plugins: ['@babel/plugin-syntax-dynamic-import']
       }
     }
   };
