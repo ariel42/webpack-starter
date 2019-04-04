@@ -1,4 +1,3 @@
-// webpack v4
 const path = require('path');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
@@ -37,11 +36,20 @@ module.exports = (env, argv) => {
   );
 
   const isEs6 = argv.es == 6;
-  const willHave2ndStage = argv.stage == 1;
+  const willBe2ndStage = argv.stage == 1;
   const is2ndStage = argv.stage == 2;
 
   const buildFolderName = isDev ? 'build-dev' : 'build';
   const buildPath = path.resolve(__dirname, buildFolderName);
+
+  const htmlMinifySettings = {
+    collapseWhitespace: true,
+    removeComments: true,
+    removeRedundantAttributes: true,
+    removeScriptTypeAttributes: false,
+    removeStyleLinkTypeAttributes: true,
+    useShortDoctype: true
+  };
 
   let config = {
     mode: isDev ? 'development' : 'production', //if not set by cli
@@ -94,7 +102,7 @@ module.exports = (env, argv) => {
           exclude: /\.useable\.scss$/,
           use: [
             {
-              loader: isDev ? 'style-loader' : MiniCssExtractPlugin.loader,
+              loader: isProd ? MiniCssExtractPlugin.loader : 'style-loader',
               options: { hmr: isDev, sourceMap: true }
             },
             {
@@ -171,23 +179,34 @@ module.exports = (env, argv) => {
       }
     },
     plugins: [
-      isProd && new CleanWebpackPlugin(buildPath, {}),
+      isProd && !is2ndStage && new CleanWebpackPlugin(buildPath, {}),
       isProd &&
         new MiniCssExtractPlugin({
           filename: 'style.[contenthash:8].css'
         }),
-      isProd && new OptimizeCSSAssetsPlugin({}),
-      new HtmlWebpackPlugin({
-        isProd: isProd,
-        isEs6: isEs6,
-        willHave2ndStage: willHave2ndStage,
-        inject: false,
-        hash: isDev,
-        minify: {},
-        chunksSortMode: 'dependency',
-        template: './src/index.html',
-        filename: willHave2ndStage ? 'temp.html' : 'index.html'
-      }),
+      isProd && !is2ndStage && new OptimizeCSSAssetsPlugin({}),
+      !is2ndStage
+        ? //first stage (maybe single)
+          new HtmlWebpackPlugin({
+            isProd: isProd,
+            isEs6: isEs6,
+            willBe2ndStage: willBe2ndStage,
+            inject: false,
+            hash: isDev,
+            minify: isProd && !willBe2ndStage ? htmlMinifySettings : {},
+            chunksSortMode: 'dependency',
+            template: './src/index.html',
+            filename: willBe2ndStage ? 'temp.html' : 'index.html'
+          })
+        : //2nd stage - transfers temp.html to index.html, with production es5 bundles
+          new HtmlWebpackPlugin({
+            inject: false,
+            hash: false,
+            minify: htmlMinifySettings,
+            chunksSortMode: 'dependency',
+            template: `${buildFolderName}/temp.html`,
+            filename: 'index.html'
+          }),
       isDev &&
         new StyleLintPlugin({
           configFile: './stylelint.config.js',
@@ -197,78 +216,5 @@ module.exports = (env, argv) => {
     ].filter(Boolean) //removes all non-truthy values
   };
 
-  if (!is2ndStage) {
-    return config;
-  }
-
-  //if we are here build production es5 bundles, that are larger but supported also by legacy browsers
-  let stage2Config = Object.assign({}, config);
-
-  stage2Config.entry = { 'main-es5': './src/index.js' };
-  stage2Config.watch = false;
-
-  stage2Config.module = {
-    rules: config.module.rules.slice()
-  };
-
-  stage2Config.module.rules[0] = {
-    test: /\.m?js$/,
-    exclude: /node_modules/,
-    use: {
-      loader: 'babel-loader',
-      options: {
-        presets: [
-          [
-            '@babel/preset-env',
-            {
-              modules: false,
-              useBuiltIns: 'entry',
-              corejs: 3,
-              targets: {
-                browsers: es5Browsers
-              }
-            }
-          ]
-        ],
-        plugins: ['@babel/plugin-syntax-dynamic-import']
-      }
-    }
-  };
-
-  stage2Config.module.rules[1] = {
-    test: /\.scss$/,
-    exclude: /\.useable\.scss$/,
-    use: [
-      {
-        loader: 'ignore-loader',
-        options: { hmr: false, sourceMap: true }
-      },
-      {
-        loader: 'css-loader',
-        options: { modules: true, importLoaders: 1 }
-      },
-      'postcss-loader',
-      'sass-loader'
-    ]
-  };
-
-  stage2Config.plugins = [
-    new HtmlWebpackPlugin({
-      inject: false,
-      hash: false,
-      minify: {
-        collapseWhitespace: true,
-        removeComments: true,
-        removeRedundantAttributes: true,
-        removeScriptTypeAttributes: false,
-        removeStyleLinkTypeAttributes: true,
-        useShortDoctype: true
-      },
-      chunksSortMode: 'dependency',
-      template: `${buildFolderName}/temp.html`,
-      filename: 'index.html'
-    })
-  ];
-
-  return stage2Config;
+  return config;
 };

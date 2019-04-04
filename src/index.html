@@ -30,7 +30,7 @@
       <%= `<script type="${htmlWebpackPlugin.options.isEs6 ? 'module' : 'application/javascript' }" 
             src="${htmlWebpackPlugin.files.chunks[chunk].entry}"></script>` %>
     <% } %>
-    <%= htmlWebpackPlugin.options.willHave2ndStage ? 
+    <%= htmlWebpackPlugin.options.willBe2ndStage ? 
       `${'<'}% for (var chunk in htmlWebpackPlugin.files.chunks) { %${'>'}
         ${'<'}%= \`${'<'}script nomodule type="application/javascript" 
                          src="${'$'}{htmlWebpackPlugin.files.chunks[chunk].entry}"${'>'}${'<'}/script${'>'}\` %${'>'}
