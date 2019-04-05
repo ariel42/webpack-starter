@@ -56,7 +56,15 @@ module.exports = (env, argv) => {
     //dev mode uses always legacy es5 polyfills, so it is possible to develop also on legacy browsers
     entry: isEs6
       ? { main: './src/index.js' }
-      : { 'main-es5': './src/index.js' },
+      : //// Select one of the following and comment the other option:
+        ////
+        //// If you BOTH USE dynamic polyfills loading (it requires Promise), AND you DON'T HAVE any other use of Promise in your app:
+        { 'main-es5': ['core-js/modules/es.promise', 'core-js/modules/es.array.iterator', './src/index.js'] },
+        ////
+        //// Otherwise:
+        // { 'main-es5': './src/index.js' },
+        ////
+        //// Also select correctly one of 3 options inside src/static-polyfills.js.
     output: {
       path: buildPath,
       filename: isDev ? '[name].[hash:8].js' : '[name].[chunkhash:8].js'
