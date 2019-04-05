@@ -161,17 +161,24 @@ module.exports = (env, argv) => {
     optimization: {
       splitChunks: {
         cacheGroups: {
-          polyfills: {
-            chunks: 'all',
+          'static-polyfills': {
+            chunks: 'initial',
             enforce: true,
             priority: 100,
-            test: /node_modules[\\/](@babel|core-js)/,
+            test: /(node_modules[\\/](@babel|core-js|whatwg))|(src[\\/]static-polyfills)/,
             name: isEs6 ? 'polyfills' : 'polyfills-es5'
+          },
+          'dynamic-polyfills': {
+            chunks: 'async',
+            enforce: true,
+            priority: 90,
+            test: /(node_modules[\\/](@babel|core-js|whatwg))|(src[\\/]dynamic-polyfills)/,
+            name: isEs6 ? 'dynamic-polyfills' : 'dynamic-polyfills-es5'
           },
           vendors: {
             chunks: 'all',
             enforce: true,
-            priority: 90,
+            priority: 80,
             test: /node_modules/,
             name: isEs6 ? 'vendors' : 'vendors-es5'
           }
