@@ -9,6 +9,7 @@ import './static-polyfills.js';
 //// The polyfills bundle will be loaded at runtime only by browsers that don't support all the features natively:
 
 const neededFeatures = [window.fetch]; //KEEP IN SYNC with dynamic-polyfills.js
+
 let hasMissingFeature = false; //we use simple code, that doesn't need polyfills by itself
 for (var i = 0; i < neededFeatures.length; ++i) {
   if (neededFeatures[i] == null) {
