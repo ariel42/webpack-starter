@@ -58,7 +58,7 @@ module.exports = (env, argv) => {
       ? { main: './src/index.js' }
       : //// Select one of the following and comment the other option:
         ////
-        //// If you BOTH USE dynamic polyfills loading (it requires Promise), AND you DON'T HAVE any other use of Promise in your app:
+        //// If in your app, you BOTH USE dynamic import(), that requires Promise, AND ALSO DON'T HAVE any other use of Promise:
         { 'main-es5': ['core-js/modules/es.promise', 'core-js/modules/es.array.iterator', './src/index.js'] },
         ////
         //// Otherwise:
@@ -180,7 +180,7 @@ module.exports = (env, argv) => {
             chunks: 'initial',
             enforce: true,
             priority: 90,
-            test: /(node_modules[\\/](@babel|core-js|whatwg))|(src[\\/]static-polyfills)/,
+            test: /(node_modules[\\/](@babel|core-js|whatwg|regenerator))|(src[\\/]static-polyfills)/,
             name: isEs6 ? 'polyfills' : 'polyfills-es5'
           },
           vendors: {

@@ -1,5 +1,5 @@
-////  The selected polyfills here will be always loaded statically by polyfills.js bundle, for both es5Browsers and es56Browsers.
-////  The es6Browsers output may be smaller, since modern browsers support natively many ES features without polyfills.
+//// The selected polyfills here will be always loaded statically by polyfills.js bundle, for both es5Browsers and es56Browsers.
+//// The es6Browsers output may be smaller, since modern browsers support natively many ES features without polyfills.
 
 import 'regenerator-runtime'; //keep this line here anyway
 
@@ -11,20 +11,24 @@ import 'regenerator-runtime'; //keep this line here anyway
 //// For loading all ES features - it costs about 23kb/34kb gzipped for es6Browsers/es5Browsers:
 // import 'core-js/stable'; //comment above imports and uncomment this
 
-//// About Promise:
-//// The idea is that they are not needed in es6Browsers if their only use is to load polyfills dynamically.
-//// Please choose one of the follwing:
+/* #region Promise polyfill selection: */
+////
+//// The idea is that it is not needed in es6Browsers, if the only use of Promise in your app 
+//// is for dynamic import() of scripts. The native Promise implementations in those browsers 
+//// should be good enough for that, even if they aren't 100% compliant with the most recent standard.
+////
+//// Please choose one of the following:
 
-//// 1. If you BOTH USE dynamic polyfills loading (it requires Promise), AND you DON'T HAVE any other use of Promise in your app:
+//// 1. If in your app, you BOTH USE dynamic import(), that requires Promise, AND ALSO DON'T HAVE any other use of Promise:
 //// Select the correct option in webpack.config.js (the LONGER 'main-es5' definition around line 62), and don't import nothing here.
 
-//// 2. If you BOTH DON'T USE dynamic polyfills loading (it requires Promise), AND you DON'T HAVE any other use of Promise in your app:
+//// 2. If in you app, you BOTH DON'T USE dynamic import(), AND ALSO DON'T HAVE any other use of Promise in your app:
 //// Select the correct option in webpack.config.js (the SHORTER 'main-es5' definition around line 65), and don't import nothing here.
 
-//// 3. If you HAVE any other of use of Promise in your app that not related to dynamic polyfills loading: 
+//// 3. If in your app, you HAVE any other of use of Promise that not related to dynamic import():
 //// Select the correct option in webpack.config.js (the SHORTER 'main-es5' definition around line 65), and also you have to import Promise.
 //// If you imported all ES features above - nothing more is required.
-//// If you didn't import all ES features above - you have to import Promise here, use either this:
+//// Otherwise, you have to import Promise here. Either use this:
 ////
 // import 'core-js/es/promise'; // for full Promise with Promise#finally, up to 8kb gzipped with its dependencies.
 ////
@@ -33,3 +37,6 @@ import 'regenerator-runtime'; //keep this line here anyway
 ////
 // import 'core-js/modules/es.promise';
 // import 'core-js/modules/es.array.iterator';
+
+////
+/* #endregion of Promise polyfill selection */

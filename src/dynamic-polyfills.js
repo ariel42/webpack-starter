@@ -1,7 +1,6 @@
-//// The scripts here will be loaded dynamically from dynamic-polyfills.js bunlde only by browsers that need them.
-//// Browsers that support natively all the needed features won't download the polyfills bundle at all.
-////
-//// PLEASE KEEP IN SYNC with neededFeatures array in index.js, in the dynamic polyfills part:
+//// The polyfills here will be bundeled into dynamic-polyfills.js, and will ne loaded dynamically only by browsers that need them.
+//// Browsers that support natively all the needed features won't download that bundle at all.
+//// PLEASE KEEP IN SYNC with the runtime browser features checking, at isBrowserMissingFeatures() in index.js:
 
 // import ...
 // import ...
