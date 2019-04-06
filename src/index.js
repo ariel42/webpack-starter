@@ -18,7 +18,7 @@ if (isBrowserMissingFeatures()) {
 //// Example for runtime browser features detection, the important things are to keep in sync
 //// with dynamic-polyfills.js, and to write simple code that doesn't need any polyfills by itself:
 function isBrowserMissingFeatures() {
-  //// If no need for dynamic polyfills loadings - just return false here:
+  //// If no need for dynamic polyfills loading - just return false here:
   // return false;
 
   //// Sample code that can be used:

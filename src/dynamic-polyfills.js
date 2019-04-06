@@ -1,4 +1,4 @@
-//// The polyfills here will be bundeled into dynamic-polyfills.js, and will ne loaded dynamically only by browsers that need them.
+//// The polyfills here will be bundeled into dynamic-polyfills.js, and will be downloaded dynamically only by browsers that need them.
 //// Browsers that support natively all the needed features won't download that bundle at all.
 //// PLEASE KEEP IN SYNC with the runtime browser features checking, at isBrowserMissingFeatures() in index.js:
 
