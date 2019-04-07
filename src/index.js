@@ -22,7 +22,7 @@ function isBrowserMissingFeatures() {
   // return false;
 
   //// Sample code that can be used:
-  const neededFeatures = [window.fetch /* feature2 /*, /* etc. */]; //KEEP IN SYNC with dynamic-polyfills.js
+  const neededFeatures = [window.Symbol /*, window.fetch /* /*, etc. */]; //KEEP IN SYNC with dynamic-polyfills.js
 
   let missingFeatures = false; //we use simple code, that doesn't need polyfills by itself
   for (var i = 0; i < neededFeatures.length; ++i) {
@@ -49,7 +49,10 @@ import useableScss from './style/main.useable.scss';
 
 //// And your code goes inside main() function:
 function main() {
-  console.log('Hello world!');
+  //ensure that Symbol if working, even in old browsers:
+  var testSymbol = Symbol('Test');
+  window[testSymbol] = 'Hello world, Symbol is working!';
+  console.log(window[testSymbol]);
 
   useableCss.use();
   useableSass.use();
@@ -72,5 +75,6 @@ function switchUseableStyles(again) {
         switchUseableStyles(false);
       }
     }, 1000);
+    
   }, 1000);
 }
