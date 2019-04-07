@@ -2,7 +2,7 @@
 //// The es6Browsers output may be smaller, since the native ES6 syntax is more compact,
 //// and also modern browsers support natively many ES features without polyfills.
 
-import 'regenerator-runtime'; // keep this line here anyway
+import 'regenerator-runtime/runtime'; // keep this line here anyway
 
 //// Select polyfills to load statically:
 // import ...
