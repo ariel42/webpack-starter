@@ -6,6 +6,6 @@
 // import ...
 // import ...
 
-//// Fetch is not included in core-js and hence it will be compiled even for es6Browsers, and it costs about 3kb gzipped.
+//// Fetch is not included in core-js and hence it will be compiled even for modern ES6 browsers, and it costs about 3kb gzipped.
 //// Comment it if not needed:
 import 'whatwg-fetch';

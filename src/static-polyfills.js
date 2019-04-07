@@ -1,5 +1,5 @@
-//// The selected polyfills here will be always downloaded statically by polyfills.js bundle, for both es5Browsers and es56Browsers.
-//// The es6Browsers output may be smaller, since the native ES6 syntax is more compact,
+//// The selected polyfills here will be always downloaded statically by polyfills.js bundle, for both legacy ES5 Browsers and modern ES6 browsers.
+//// The output for ES6 Browsers may be smaller, since the native ES6 syntax is more compact,
 //// and also modern browsers support natively many ES features without polyfills.
 
 import 'regenerator-runtime/runtime'; // keep this line here anyway
@@ -9,12 +9,12 @@ import 'regenerator-runtime/runtime'; // keep this line here anyway
 // import ...
 // import ...
 
-//// For loading all ES stable features - uncomment this, it costs about 23kb/34kb gzipped for es6Browsers/es5Browsers:
+//// For loading all ES stable features - uncomment this, it costs about 23kb/34kb gzipped for ES6/ES5 browsers:
 // import 'core-js/stable';
 
 /* #region Promise polyfill selection: */
 ////
-//// The idea is that it is not needed in es6Browsers, if the only use of Promise in your app 
+//// The idea is that it is not needed for modern ES6 browsers, if the only use of Promise in your app 
 //// is for dynamic import() of scripts. The native Promise implementations in those browsers 
 //// should be good enough for that, even if they aren't 100% compliant with the most recent standard.
 ////

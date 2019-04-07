@@ -5,22 +5,8 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const StyleLintPlugin = require('stylelint-webpack-plugin');
 
-//modern browsers that support es6 syntax and <script type=module / nomodule>,
-//and since they are modern they also need less polyfills
-const es6Browsers = [
-  'Chrome >= 61',
-  'ChromeAndroid >= 61',
-  'Safari >= 11',
-  'iOS >= 11',
-  'Firefox >= 60',
-  'FirefoxAndroid >= 60',
-  'Opera >= 48',
-  'OperaMobile >= 48',
-  'Edge >= 16'
-];
-
-//both modern and legacy browsers that support normal es5, and need more polyfills beacuse of the legacy browsers
-const es5Browsers = [
+//definition for all the browsers that should be supported by your app:
+const allSupportedBrowsers = [
   '>0.2%',
   'not dead',
   'not op_mini all',
@@ -53,7 +39,7 @@ module.exports = (env, argv) => {
 
   let config = {
     mode: isDev ? 'development' : 'production', //if not set by cli
-    //dev mode uses always legacy es5 polyfills, so it is possible to develop also on legacy browsers
+    //dev mode always uses ES5 polyfills, so it is possible to develop also on legacy browsers
     entry: isEs6
       ? { main: './src/index.js' }
       : //// Select one of the following and comment the other option:
@@ -63,8 +49,8 @@ module.exports = (env, argv) => {
         ////
         //// Otherwise:
         // { 'main-es5': './src/index.js' },
-        ////
-        //// Also select correctly one of 3 options inside src/static-polyfills.js.
+    ////
+    //// Also select correctly one of 3 options inside src/static-polyfills.js.
     output: {
       path: buildPath,
       filename: isDev ? '[name].[hash:8].js' : '[name].[chunkhash:8].js'
@@ -93,11 +79,20 @@ module.exports = (env, argv) => {
                   '@babel/preset-env',
                   {
                     modules: false,
-                    useBuiltIns: 'entry',
+                    useBuiltIns: 'entry', //bundle only the needed static polyfills (from src/static-polyfills.js) by the targets field
                     corejs: 3,
-                    targets: {
-                      browsers: isEs6 ? es6Browsers : es5Browsers
-                    }
+                    targets: isEs6
+                      ? {
+                          //build for modern browsers that support the new ES6 compact syntax and the <script type=module / nomodule> tag,
+                          //and also they need less polyfills since they support many ES6 features natively:
+                          esmodules: true
+                        }
+                      : {
+                          //build also for legacy browsers that support only normal ES5 syntax,
+                          //and need more polyfills fot supporting new ES6 features:
+                          esmodules: false,
+                          browsers: allSupportedBrowsers
+                        }
                   }
                 ]
               ],
@@ -213,7 +208,7 @@ module.exports = (env, argv) => {
             template: './src/index.html',
             filename: willBe2ndStage ? 'temp.html' : 'index.html'
           })
-        : //2nd stage - transfers temp.html to index.html, with production es5 bundles
+        : //2nd stage - transfers temp.html to index.html, with production ES5 bundles
           new HtmlWebpackPlugin({
             inject: false,
             hash: false,
