@@ -8,7 +8,7 @@ import './static-polyfills.js';
 //// that they don't support all the needed features natively. Modern browsers may not download it at all.
 //// Make sure that you imported Promise polyfill correctly, by selecting the correct option for you app at static-polyfills.js:
 if (isBrowserMissingFeatures()) {
-  import('./dynamic-polyfills.js').then(function() {
+  import('./dynamic-polyfills.js').then(function () {
     main();
   });
 } else {
@@ -39,17 +39,38 @@ function isBrowserMissingFeatures() {
 /* #endregion of Polyfills loading */
 
 //// Now your imports go here:
-import './scss/main.scss';
-import useableStyle from './scss/main.useable.scss';
+//demonstrate .css, .sass and .scss support, either as constant or as useable styles:
+import './style/main.css';
+import './style/main.sass';
+import './style/main.scss';
+import useableCss from './style/main.useable.css';
+import useableSass from './style/main.useable.sass';
+import useableScss from './style/main.useable.scss';
 
 //// And your code goes inside main() function:
 function main() {
-  useableStyle.use();
+  console.log('Hello world!');
 
+  useableCss.use();
+  useableSass.use();
+  useableScss.use();
+  switchUseableStyles(true);
+}
+
+function switchUseableStyles(again) {
   setTimeout(() => {
-    useableStyle.unuse();
+    useableCss.unuse();
+    useableSass.unuse();
+    useableScss.unuse();
+
     setTimeout(() => {
-      useableStyle.use();
+      useableCss.use();
+      useableSass.use();
+      useableScss.use();
+
+      if (again) {
+        switchUseableStyles(false);
+      }
     }, 1000);
   }, 1000);
 }

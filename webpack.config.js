@@ -43,12 +43,12 @@ module.exports = (env, argv) => {
     entry: isEs6
       ? { main: './src/index.js' }
       : //// Select one of the following and comment the other option:
-        ////
-        //// If in your app, you BOTH USE dynamic import(), that requires Promise, AND ALSO DON'T HAVE any other use of Promise:
-        { 'main-es5': ['core-js/modules/es.promise', 'core-js/modules/es.array.iterator', './src/index.js'] },
-        ////
-        //// Otherwise:
-        // { 'main-es5': './src/index.js' },
+      ////
+      //// If in your app, you BOTH USE dynamic import(), that requires Promise, AND ALSO DON'T HAVE any other use of Promise:
+      { 'main-es5': ['core-js/modules/es.promise', 'core-js/modules/es.array.iterator', './src/index.js'] },
+    ////
+    //// Otherwise:
+    // { 'main-es5': './src/index.js' },
     ////
     //// Also select correctly one of 3 options inside src/static-polyfills.js.
     output: {
@@ -83,16 +83,16 @@ module.exports = (env, argv) => {
                     corejs: 3,
                     targets: isEs6
                       ? {
-                          //build for modern browsers that support the new ES6 compact syntax and the <script type=module / nomodule> tag,
-                          //and also they need less polyfills since they support many ES6 features natively:
-                          esmodules: true
-                        }
+                        //build for modern browsers that support the new ES6 compact syntax and the <script type=module / nomodule> tag,
+                        //and also they need less polyfills since they support many ES6 features natively:
+                        esmodules: true
+                      }
                       : {
-                          //build also for legacy browsers that support only normal ES5 syntax,
-                          //and need more polyfills fot supporting new ES6 features:
-                          esmodules: false,
-                          browsers: allSupportedBrowsers
-                        }
+                        //build also for legacy browsers that support only normal ES5 syntax,
+                        //and need more polyfills fot supporting new ES6 features:
+                        esmodules: false,
+                        browsers: allSupportedBrowsers
+                      }
                   }
                 ]
               ],
@@ -101,8 +101,8 @@ module.exports = (env, argv) => {
           }
         },
         {
-          test: /\.scss$/,
-          exclude: /\.useable\.scss$/,
+          test: /\.(s?css|sass)$/,
+          exclude: /\.useable\.(s?css|sass)$/,
           use: [
             {
               loader: isProd ? MiniCssExtractPlugin.loader : 'style-loader',
@@ -110,14 +110,21 @@ module.exports = (env, argv) => {
             },
             {
               loader: 'css-loader',
-              options: { modules: true, importLoaders: 1 }
+              options: { modules: true, importLoaders: 1, sourceMap: true }
             },
-            'postcss-loader',
+            {
+              loader: 'postcss-loader',
+              options: {
+                sourceMap: true,
+                ident: 'postcss',
+                plugins: (loader) => [require('postcss-cssnext')(), require('cssnano')()]
+              }
+            },
             'sass-loader'
           ]
         },
         {
-          test: /\.useable\.scss$/,
+          test: /\.useable\.(s?css|sass)$/,
           use: [
             {
               loader: 'style-loader/useable',
@@ -125,9 +132,16 @@ module.exports = (env, argv) => {
             },
             {
               loader: 'css-loader',
-              options: { modules: true, importLoaders: 1 }
+              options: { modules: true, importLoaders: 1, sourceMap: true }
             },
-            'postcss-loader',
+            {
+              loader: 'postcss-loader',
+              options: {
+                sourceMap: true,
+                ident: 'postcss',
+                plugins: (loader) => [require('postcss-cssnext')(), require('cssnano')()]
+              },
+            },
             'sass-loader'
           ]
         },
@@ -191,38 +205,38 @@ module.exports = (env, argv) => {
     plugins: [
       isProd && !is2ndStage && new CleanWebpackPlugin(buildPath, {}),
       isProd &&
-        new MiniCssExtractPlugin({
-          filename: 'style.[contenthash:8].css'
-        }),
+      new MiniCssExtractPlugin({
+        filename: 'style.[contenthash:8].css'
+      }),
       isProd && !is2ndStage && new OptimizeCSSAssetsPlugin({}),
       !is2ndStage
         ? //first stage (maybe single)
-          new HtmlWebpackPlugin({
-            isProd: isProd,
-            isEs6: isEs6,
-            willBe2ndStage: willBe2ndStage,
-            inject: false,
-            hash: isDev,
-            minify: isProd && !willBe2ndStage ? htmlMinifySettings : {},
-            chunksSortMode: 'dependency',
-            template: './src/index.html',
-            filename: willBe2ndStage ? 'temp.html' : 'index.html'
-          })
-        : //2nd stage - transfers temp.html to index.html, with production ES5 bundles
-          new HtmlWebpackPlugin({
-            inject: false,
-            hash: false,
-            minify: htmlMinifySettings,
-            chunksSortMode: 'dependency',
-            template: `${buildFolderName}/temp.html`,
-            filename: 'index.html'
-          }),
-      isDev &&
-        new StyleLintPlugin({
-          configFile: './stylelint.config.js',
-          files: './src/scss/*.scss',
-          syntax: 'scss'
+        new HtmlWebpackPlugin({
+          isProd: isProd,
+          isEs6: isEs6,
+          willBe2ndStage: willBe2ndStage,
+          inject: false,
+          hash: isDev,
+          minify: isProd && !willBe2ndStage ? htmlMinifySettings : {},
+          chunksSortMode: 'dependency',
+          template: './src/index.html',
+          filename: willBe2ndStage ? 'temp.html' : 'index.html'
         })
+        : //2nd stage - transfers temp.html to index.html, with production ES5 bundles
+        new HtmlWebpackPlugin({
+          inject: false,
+          hash: false,
+          minify: htmlMinifySettings,
+          chunksSortMode: 'dependency',
+          template: `${buildFolderName}/temp.html`,
+          filename: 'index.html'
+        }),
+      isDev &&
+      new StyleLintPlugin({
+        configFile: './stylelint.config.js',
+        files: './src/scss/*.scss',
+        syntax: 'scss'
+      })
     ].filter(Boolean) //removes all non-truthy values
   };
 
