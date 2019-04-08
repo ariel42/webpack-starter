@@ -199,7 +199,7 @@ module.exports = (env, argv) => {
             chunks: 'initial',
             enforce: true,
             priority: 90,
-            test: /(node_modules[\\/](@babel|core-js|whatwg|regenerator))|(src[\\/]static-polyfills)/,
+            test: /node_modules[\\/](@babel|core-js|whatwg|regenerator)/,
             name: isEs6 ? 'polyfills' : 'polyfills-es5'
           },
           vendors: {
