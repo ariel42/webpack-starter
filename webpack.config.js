@@ -120,7 +120,7 @@ module.exports = (env, argv) => {
             },
             {
               loader: 'css-loader',
-              options: { modules: true, importLoaders: 1, sourceMap: true }
+              options: { importLoaders: 1, sourceMap: true }
             },
             {
               loader: 'postcss-loader',
@@ -142,7 +142,7 @@ module.exports = (env, argv) => {
             },
             {
               loader: 'css-loader',
-              options: { modules: true, importLoaders: 1, sourceMap: true }
+              options: { importLoaders: 1, sourceMap: true }
             },
             {
               loader: 'postcss-loader',
@@ -157,17 +157,18 @@ module.exports = (env, argv) => {
         },
         {
           test: /\.(png|jpe?g|gif|svg|webp)$/i,
+          exclude: /[\\/]fonts[\\/].+\.svg$/i,
           use: [
             {
               loader: 'file-loader',
               options: {
-                name: 'img/[name].[hash:8].[ext]'
+                name: 'images/[name].[hash:8].[ext]'
               }
             }
           ]
         },
         {
-          test: /\.(ttf|eot|woff2?)$/i,
+          test: /(\.(ttf|eot|woff2?)|([\\/]fonts[\\/].+\.svg))$/i,
           use: [
             {
               loader: 'file-loader',

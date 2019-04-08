@@ -9,7 +9,7 @@
     <meta name="theme-color" content="#2980b9" />
     <title>Webpack Boilerplate</title>
 
-    <% // Please add your code above, and keep the following lines here: %>
+    <% // Please add your head code above, and keep the following lines here: %>
 
     <% if (htmlWebpackPlugin.options.isProd) { %>
       <% for (var css in htmlWebpackPlugin.files.css) { %>
@@ -22,9 +22,10 @@
 
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
+
     <div>Hello, world!</div>
 
-    <% // Please add your code above, and keep the following lines here: %>
+    <% // Please add your body code above, and keep the following lines here: %>
 
     <% for (var chunk in htmlWebpackPlugin.files.chunks) { %>
       <%= `<script type="${htmlWebpackPlugin.options.isEs6 ? 'module' : 'application/javascript' }" 
