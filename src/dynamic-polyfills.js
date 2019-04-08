@@ -3,7 +3,7 @@
 //// PLEASE KEEP IN SYNC with the runtime browser features checking, at isBrowserMissingFeatures() in index.js (the exact order isn't important):
 
 //// Fetch is not included in core-js and hence it will be compiled even for modern ES6 browsers, and it costs about 3kb gzipped.
-//// Comment it if not needed:
+//// Also fetch is Promise based, so make sure you select option 3 of Promise polyfill selection in static-polyfills.js:
 // import 'whatwg-fetch';
 
 import 'core-js/modules/es.symbol';

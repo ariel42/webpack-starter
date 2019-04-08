@@ -14,6 +14,20 @@ const allSupportedBrowsers = [
   'ie >= 9'
 ];
 
+//Modern browsers that support ES6 modules natively, based od on https://github.com/babel/babel/blob/master/packages/babel-preset-env/data/built-in-modules.json
+//To test the global usage of those browsers: https://browserl.ist/?q=Chrome%3E%3D61%2C+ChromeAndroid%3E%3D61%2C+Safari%3E%3D11%2C+iOS%3E%3D11%2C+Firefox%3E%3D60%2C+FirefoxAndroid%3E%3D64%2C+Opera%3E%3D48%2C+OperaMobile%3E%3D48%2C+Edge%3E%3D16
+//We use Safari 11 to avoid the problems in version 10.1, that old version is almost not in use today.
+//For this customization we don't use targets.esmodules=true, but provide the browsers manually:
+const es6Browsers = [
+  'Chrome>=61',
+  'Safari>=11',
+  'iOS>=11',
+  'Firefox>=60',
+  'FirefoxAndroid>=64',
+  'Opera>=48',
+  'Edge>=16'
+];
+
 module.exports = (env, argv) => {
   const isProd = argv.mode === 'production';
   const isDev = !isProd;
@@ -81,18 +95,14 @@ module.exports = (env, argv) => {
                     modules: false,
                     useBuiltIns: 'entry', //bundle only the needed static polyfills (from src/static-polyfills.js) by the targets field
                     corejs: 3,
-                    targets: isEs6
-                      ? {
-                        //build for modern browsers that support the new ES6 compact syntax and the <script type=module / nomodule> tag,
+                    targets: {
+                      browsers: isEs6 ?
+                        //build for modern browsers that support the new ES6 compact syntax natively and the <script type=module / nomodule> tag,
                         //and also they need less polyfills since they support many ES6 features natively:
-                        esmodules: true
-                      }
-                      : {
-                        //build also for legacy browsers that support only normal ES5 syntax,
-                        //and need more polyfills fot supporting new ES6 features:
-                        esmodules: false,
-                        browsers: allSupportedBrowsers
-                      }
+                        es6Browsers :
+                        //build also for legacy browsers that support only normal ES5 syntax, and need more polyfills fot supporting new ES6 features:
+                        allSupportedBrowsers
+                    }
                   }
                 ]
               ],
