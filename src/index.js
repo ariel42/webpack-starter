@@ -54,6 +54,12 @@ function main() {
   window[testSymbol] = 'Hello world, Symbol is working!';
   console.log(window[testSymbol]);
 
+  if (module.hot) { //should be true only if we run `npm start`
+    console.log('Hot Module Replacement (HMR) is working!');
+    //HMR works for css out of the box, change css values in src/style files to see it in action.
+    //See https://webpack.js.org/guides/hot-module-replacement/ to use it also for hot reloading of js module files.
+  }
+
   useableCss.use();
   useableSass.use();
   useableScss.use();
@@ -75,6 +81,6 @@ function switchUseableStyles(again) {
         switchUseableStyles(false);
       }
     }, 1000);
-    
+
   }, 1000);
 }
