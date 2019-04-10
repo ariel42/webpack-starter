@@ -1,44 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no" />
-    <meta name="author" content="Your Name" />
-    <meta name="description" content="Webpack Boilerplate" />
-    <meta name="theme-color" content="#2980b9" />
-    <title>Webpack Boilerplate</title>
 
-    <% // Please add your head code above, and keep the following lines here: %>
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no" />
+  <meta name="author" content="Your Name" />
+  <meta name="description" content="Webpack Boilerplate" />
+  <meta name="theme-color" content="#2980b9" />
+  <title>Webpack Boilerplate</title>
+</head>
 
-    <% if (htmlWebpackPlugin.options.isProd) { %>
-      <% for (var css in htmlWebpackPlugin.files.css) { %>
-        <link rel="stylesheet" href="<%= htmlWebpackPlugin.files.css[css] %>">
-      <% } %>
-    <% } %>
+<body>
+  <noscript>You need to enable JavaScript to run this app.</noscript>
 
-    <% // Thank you %>
-  </head>
+  <div>Hello, world!</div>
 
-  <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
 
-    <div>Hello, world!</div>
 
-    <% // Please add your body code above, and keep the following lines here: %>
+  <% // Please add your body code above, and keep the following lines here, at the bottom of the body: %>
 
-    <% for (var chunk in htmlWebpackPlugin.files.chunks) { %>
-      <%= `<script type="${htmlWebpackPlugin.options.isEs6 ? 'module' : 'application/javascript' }" 
-            src="${htmlWebpackPlugin.files.chunks[chunk].entry}"></script>` %>
-    <% } %>
-    <%= htmlWebpackPlugin.options.willBe2ndStage ? 
-      `${'<'}% for (var chunk in htmlWebpackPlugin.files.chunks) { %${'>'}
-        ${'<'}%= \`${'<'}script nomodule type="application/javascript" 
-                         src="${'$'}{htmlWebpackPlugin.files.chunks[chunk].entry}"${'>'}${'<'}/script${'>'}\` %${'>'}
-        ${'<'}% } %${'>'}`
-      : `` 
-    %>
+  <%= htmlWebpackPlugin.options.willBe2ndStage ? 
+        Object.keys(htmlWebpackPlugin.files.chunks).map(function (chunk) {
+          return `<script type="module" src="${htmlWebpackPlugin.files.chunks[chunk].entry}"></script>` 
+        }).join('\n') : `` %>
+</body>
 
-    <% // Thank you %>
-  </body>
 </html>

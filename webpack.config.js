@@ -4,6 +4,7 @@ const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const StyleLintPlugin = require('stylelint-webpack-plugin');
+const ScriptExtHtmlWebpackPlugin = require('script-ext-html-webpack-plugin');
 
 //definition for all the browsers that should be supported by your app:
 const allSupportedBrowsers = [
@@ -220,30 +221,25 @@ module.exports = (env, argv) => {
         filename: 'style.[contenthash:8].css'
       }),
       isProd && !is2ndStage && new OptimizeCSSAssetsPlugin({}),
-      !is2ndStage
-        ? //first stage (maybe single)
-        new HtmlWebpackPlugin({
-          isProd: isProd,
-          isEs6: isEs6,
-          willBe2ndStage: willBe2ndStage,
-          inject: false,
-          hash: isDev,
-          minify: isProd && !willBe2ndStage ? htmlMinifySettings : {},
-          chunksSortMode: 'dependency',
-          template: './src/index.html',
-          filename: willBe2ndStage ? 'temp.html' : 'index.html'
-        })
-        : //2nd stage - transfers temp.html to index.html, with production ES5 bundles
-        new HtmlWebpackPlugin({
-          inject: false,
-          hash: false,
-          minify: htmlMinifySettings,
-          chunksSortMode: 'dependency',
-          template: `${buildFolderName}/temp.html`,
-          filename: 'index.html'
-        }),
-      isDev &&
-      new StyleLintPlugin({
+      new HtmlWebpackPlugin({
+        willBe2ndStage: willBe2ndStage,
+        inject: !willBe2ndStage,
+        hash: isDev,
+        minify: isProd && !willBe2ndStage ? htmlMinifySettings : {},
+        chunksSortMode: 'dependency',
+        template: is2ndStage ? `${buildFolderName}/temp.html` : './src/index.html',
+        filename: willBe2ndStage ? 'temp.html' : 'index.html'
+      }),
+      !willBe2ndStage && isEs6 && new ScriptExtHtmlWebpackPlugin({
+        module: /\.m?js$/
+      }),
+      is2ndStage && !isEs6 && new ScriptExtHtmlWebpackPlugin({
+        custom: {
+          test: /\.js$/,
+          attribute: 'nomodule',
+        }
+      }),
+      isDev && new StyleLintPlugin({
         configFile: './stylelint.config.js',
         files: './src/scss/*.scss',
         syntax: 'scss'
