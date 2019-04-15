@@ -20,7 +20,7 @@
 
   <% // Please add your body code above, and keep the following lines here, at the bottom of the body: %>
 
-  <%= htmlWebpackPlugin.options.willBe2ndStage ? 
+  <%= htmlWebpackPlugin.options.willBeAnotherStage ? 
         Object.keys(htmlWebpackPlugin.files.chunks).map(function (chunk) {
           return `<script type="module" src="${htmlWebpackPlugin.files.chunks[chunk].entry}"></script>` 
         }).join('\n') : `` %>

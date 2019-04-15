@@ -20,13 +20,13 @@ const allSupportedBrowsers = [
 //We use Safari 11 to avoid the problems in version 10.1, that old version is almost not in use today.
 //For this customization we don't use targets.esmodules=true, but provide the browsers manually:
 const es6Browsers = [
-  'Chrome>=61',
-  'Safari>=11',
-  'iOS>=11',
-  'Firefox>=60',
-  'FirefoxAndroid>=64',
-  'Opera>=48',
-  'Edge>=16'
+  'Chrome >= 61',
+  'Safari >= 11',
+  'iOS >= 11',
+  'Firefox >= 60',
+  'FirefoxAndroid >= 64',
+  'Opera >= 48',
+  'Edge >= 16'
 ];
 
 module.exports = (env, argv) => {
@@ -37,7 +37,7 @@ module.exports = (env, argv) => {
   );
 
   const isEs6 = argv.es == 6;
-  const willBe2ndStage = argv.stage == 1;
+  const willBeAnotherStage = argv.stage == 1;
   const is2ndStage = argv.stage == 2;
 
   const buildFolderName = isDev ? 'build-dev' : 'build';
@@ -222,15 +222,15 @@ module.exports = (env, argv) => {
       }),
       isProd && !is2ndStage && new OptimizeCSSAssetsPlugin({}),
       new HtmlWebpackPlugin({
-        willBe2ndStage: willBe2ndStage,
-        inject: !willBe2ndStage,
+        willBeAnotherStage: willBeAnotherStage,
+        inject: !willBeAnotherStage,
         hash: isDev,
-        minify: isProd && !willBe2ndStage ? htmlMinifySettings : {},
+        minify: isProd && !willBeAnotherStage ? htmlMinifySettings : false,
         chunksSortMode: 'dependency',
         template: is2ndStage ? `${buildPath}/temp.html` : './index.html',
-        filename: willBe2ndStage ? 'temp.html' : 'index.html'
+        filename: willBeAnotherStage ? 'temp.html' : 'index.html'
       }),
-      !willBe2ndStage && isEs6 && new ScriptExtHtmlWebpackPlugin({
+      !willBeAnotherStage && isEs6 && new ScriptExtHtmlWebpackPlugin({
         module: /\.m?js$/
       }),
       is2ndStage && !isEs6 && new ScriptExtHtmlWebpackPlugin({
