@@ -14,16 +14,9 @@
 <body>
   <noscript>You need to enable JavaScript to run this app.</noscript>
 
-  <div>Hello, world!</div>
-
-
-
-  <% // Please add your body code above, and keep the following lines here, at the bottom of the body: %>
-
-  <%= htmlWebpackPlugin.options.willBeAnotherStage ? 
-        Object.keys(htmlWebpackPlugin.files.chunks).map(function (chunk) {
-          return `<script type="module" src="${htmlWebpackPlugin.files.chunks[chunk].entry}"></script>` 
-        }).join('\n') : `` %>
+  <!-- Your content goes here: -->
+  <div>Hello, world!!!</div>
+  
 </body>
 
 </html>

@@ -5,6 +5,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const StyleLintPlugin = require('stylelint-webpack-plugin');
 const ScriptExtHtmlWebpackPlugin = require('script-ext-html-webpack-plugin');
+const HtmlWebpackHarddiskPlugin = require('html-webpack-harddisk-plugin');
 
 //definition for all the browsers that should be supported by your app:
 const allSupportedBrowsers = [
@@ -42,6 +43,7 @@ module.exports = (env, argv) => {
 
   const buildFolderName = isDev ? 'build-dev' : 'build';
   const buildPath = path.resolve(__dirname, buildFolderName);
+  const srcPath = path.resolve(__dirname, 'src');
 
   const htmlMinifySettings = {
     collapseWhitespace: true,
@@ -55,14 +57,13 @@ module.exports = (env, argv) => {
   let config = {
     mode: isDev ? 'development' : 'production', //if not set by cli
     //dev mode always uses ES5 polyfills, so it is possible to develop also on legacy browsers
-    context: path.resolve(__dirname, 'src'),
-    entry: isEs6
-      ? { main: './index.js' }
-      : //// Select one of the following and comment the other option:
+    context: srcPath,
+    entry: isEs6 ?
+      { main: './index.js' } :
+      //// Select one of the following and comment the other option:
       ////
       //// If in your app, you BOTH USE dynamic import(), that requires Promise, AND ALSO DON'T HAVE any other use of Promise:
       { 'main-es5': ['core-js/modules/es.promise', 'core-js/modules/es.array.iterator', './index.js'] },
-    ////
     //// Otherwise:
     // { 'main-es5': './index.js' },
     ////
@@ -73,6 +74,7 @@ module.exports = (env, argv) => {
     },
     devtool: isDev ? 'eval-source-map' : 'source-map',
     devServer: {
+      contentBase: srcPath,
       watchContentBase: true,
       compress: true,
       open: true,
@@ -114,7 +116,7 @@ module.exports = (env, argv) => {
         {
           test: /\.(s?css|sass)$/,
           exclude: /\.useable\.(s?css|sass)$/,
-          use: [
+          use: !is2ndStage ? [
             {
               loader: isProd ? MiniCssExtractPlugin.loader : 'style-loader',
               options: { hmr: isDev, sourceMap: true }
@@ -132,7 +134,7 @@ module.exports = (env, argv) => {
               }
             },
             'sass-loader'
-          ]
+          ] : 'ignore-loader'
         },
         {
           test: /\.useable\.(s?css|sass)$/,
@@ -178,6 +180,18 @@ module.exports = (env, argv) => {
               }
             }
           ]
+        },
+        {
+          test: /.html$/,
+          exclude: /temp\.html$/,
+          use: !isDevServer ? [
+            {
+              loader: 'html-loader',
+              options: {
+                minimize: false
+              }
+            }
+          ] : 'raw-loader'
         }
       ]
     },
@@ -215,22 +229,24 @@ module.exports = (env, argv) => {
       }
     },
     plugins: [
-      isProd && !is2ndStage && new CleanWebpackPlugin(buildPath, {}),
-      isProd &&
-      new MiniCssExtractPlugin({
+      !isDevServer && !is2ndStage && new CleanWebpackPlugin(buildPath, {}),
+      isProd && !is2ndStage && new MiniCssExtractPlugin({
         filename: 'style.[contenthash:8].css'
       }),
       isProd && !is2ndStage && new OptimizeCSSAssetsPlugin({}),
       new HtmlWebpackPlugin({
-        willBeAnotherStage: willBeAnotherStage,
-        inject: !willBeAnotherStage,
+        alwaysWriteToDisk: willBeAnotherStage,
+        inject: true,
         hash: isDev,
         minify: isProd && !willBeAnotherStage ? htmlMinifySettings : false,
         chunksSortMode: 'dependency',
-        template: is2ndStage ? `${buildPath}/temp.html` : './index.html',
+        template: is2ndStage ? 'temp.html' : 'index.html',
         filename: willBeAnotherStage ? 'temp.html' : 'index.html'
       }),
-      !willBeAnotherStage && isEs6 && new ScriptExtHtmlWebpackPlugin({
+      willBeAnotherStage && new HtmlWebpackHarddiskPlugin({
+        outputPath: srcPath
+      }),
+      isEs6 && new ScriptExtHtmlWebpackPlugin({
         module: /\.m?js$/
       }),
       is2ndStage && !isEs6 && new ScriptExtHtmlWebpackPlugin({
