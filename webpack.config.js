@@ -55,15 +55,16 @@ module.exports = (env, argv) => {
   let config = {
     mode: isDev ? 'development' : 'production', //if not set by cli
     //dev mode always uses ES5 polyfills, so it is possible to develop also on legacy browsers
+    context: path.resolve(__dirname, 'src'),
     entry: isEs6
-      ? { main: './src/index.js' }
+      ? { main: './index.js' }
       : //// Select one of the following and comment the other option:
       ////
       //// If in your app, you BOTH USE dynamic import(), that requires Promise, AND ALSO DON'T HAVE any other use of Promise:
-      { 'main-es5': ['core-js/modules/es.promise', 'core-js/modules/es.array.iterator', './src/index.js'] },
+      { 'main-es5': ['core-js/modules/es.promise', 'core-js/modules/es.array.iterator', './index.js'] },
     ////
     //// Otherwise:
-    // { 'main-es5': './src/index.js' },
+    // { 'main-es5': './index.js' },
     ////
     //// Also select correctly one of 3 options inside src/static-polyfills.js.
     output: {
@@ -72,7 +73,6 @@ module.exports = (env, argv) => {
     },
     devtool: isDev ? 'eval-source-map' : 'source-map',
     devServer: {
-      contentBase: path.join(__dirname, 'src'),
       watchContentBase: true,
       compress: true,
       open: true,
@@ -227,7 +227,7 @@ module.exports = (env, argv) => {
         hash: isDev,
         minify: isProd && !willBe2ndStage ? htmlMinifySettings : {},
         chunksSortMode: 'dependency',
-        template: is2ndStage ? `${buildFolderName}/temp.html` : './src/index.html',
+        template: is2ndStage ? `${buildPath}/temp.html` : './index.html',
         filename: willBe2ndStage ? 'temp.html' : 'index.html'
       }),
       !willBe2ndStage && isEs6 && new ScriptExtHtmlWebpackPlugin({
@@ -241,7 +241,7 @@ module.exports = (env, argv) => {
       }),
       isDev && new StyleLintPlugin({
         configFile: './stylelint.config.js',
-        files: './src/scss/*.scss',
+        files: './style/*.scss',
         syntax: 'scss'
       })
     ].filter(Boolean) //removes all non-truthy values
