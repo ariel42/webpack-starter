@@ -1,11 +1,9 @@
 const path = require('path');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const StyleLintPlugin = require('stylelint-webpack-plugin');
 const ScriptExtHtmlWebpackPlugin = require('script-ext-html-webpack-plugin');
-const HtmlWebpackHarddiskPlugin = require('html-webpack-harddisk-plugin');
 
 //definition for all the browsers that should be supported by your app:
 const allSupportedBrowsers = [
@@ -233,18 +231,13 @@ module.exports = (env, argv) => {
       isProd && !is2ndStage && new MiniCssExtractPlugin({
         filename: 'style.[contenthash:8].css'
       }),
-      isProd && !is2ndStage && new OptimizeCSSAssetsPlugin({}),
       new HtmlWebpackPlugin({
-        alwaysWriteToDisk: willBeAnotherStage,
         inject: true,
         hash: isDev,
         minify: isProd && !willBeAnotherStage ? htmlMinifySettings : false,
         chunksSortMode: 'dependency',
-        template: is2ndStage ? 'temp.html' : 'index.html',
+        template: is2ndStage ? `${buildPath}/temp.html` : 'index.html',
         filename: willBeAnotherStage ? 'temp.html' : 'index.html'
-      }),
-      willBeAnotherStage && new HtmlWebpackHarddiskPlugin({
-        outputPath: srcPath
       }),
       isEs6 && new ScriptExtHtmlWebpackPlugin({
         module: /\.m?js$/
