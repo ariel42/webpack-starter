@@ -68,7 +68,10 @@ module.exports = (env, argv) => {
     //// Also select correctly one of 3 options inside src/static-polyfills.js.
     output: {
       path: buildPath,
-      filename: isDev ? '[name].[hash:8].js' : '[name].[chunkhash:8].js'
+      filename: isDev ? '[name].[hash:8].js' : '[name].[chunkhash:8].js',
+      //Default deploy url of assets, for generating correct links relative to the html page. Can be overriden by loaders.
+      //See examples at https://webpack.js.org/configuration/output#outputpublicpath
+      publicPath: isDevServer ? '' : ''  // '' means the same folder of the html, leave it for dev server
     },
     devtool: isDev ? 'eval-source-map' : 'source-map',
     devServer: {
