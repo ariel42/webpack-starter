@@ -21,13 +21,13 @@ import 'regenerator-runtime/runtime'; // keep this line here anyway
 //// Please choose one of the following:
 
 //// 1. If in your app, you BOTH USE dynamic import(), that requires Promise, AND ALSO DON'T HAVE any other use of Promise:
-//// Select the correct option in webpack.config.js (the LONGER 'main-es5' definition around line 62), and don't import anything here.
+//// Select the correct option in webpack.config.js (the LONGER 'main-es5' definition around line 64), and don't import anything here.
 
 //// 2. If in you app, you BOTH DON'T USE dynamic import(), AND ALSO DON'T HAVE any other use of Promise in your app:
-//// Select the correct option in webpack.config.js (the SHORTER 'main-es5' definition around line 65), and don't import anything here.
+//// Select the correct option in webpack.config.js (the SHORTER 'main-es5' definition around line 66), and don't import anything here.
 
 //// 3. If in your app, you HAVE any other of use of Promise that not related to dynamic import():
-//// Select the correct option in webpack.config.js (the SHORTER 'main-es5' definition around line 65), and also you have to import Promise.
+//// Select the correct option in webpack.config.js (the SHORTER 'main-es5' definition around line 66), and also you have to import Promise.
 //// If you imported all ES features above - nothing more is required.
 //// Otherwise, you have to import Promise here. Either use this:
 ////
