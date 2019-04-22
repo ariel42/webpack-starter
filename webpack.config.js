@@ -238,6 +238,7 @@ module.exports = (env, argv) => {
         inject: true,
         hash: isDev,
         minify: isProd && !willBeAnotherStage ? htmlMinifySettings : false,
+        favicon: !is2ndStage ? 'favicon.ico' : '',
         chunksSortMode: 'dependency',
         template: is2ndStage ? `${buildPath}/temp.html` : 'index.html',
         filename: willBeAnotherStage ? 'temp.html' : 'index.html'
