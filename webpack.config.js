@@ -28,6 +28,11 @@ const es6Browsers = [
   'Edge >= 16'
 ];
 
+let pages = [
+  { name: 'index', html: './index.html', script: './index.js' },
+  { name: 'test', html: './index2.html', script: './index2.js' }
+]
+
 module.exports = (env, argv) => {
   const isProd = argv.mode === 'production';
   const isDev = !isProd;
@@ -56,12 +61,20 @@ module.exports = (env, argv) => {
     mode: isDev ? 'development' : 'production', //if not set by cli
     //dev mode always uses ES5 polyfills, so it is possible to develop also on legacy browsers
     context: srcPath,
-    entry: isEs6 ?
-      { main: './index.js' } :
-      //// Select one of the following and comment the other option:
-      ////
-      //// If in your app, you BOTH USE dynamic import(), that requires Promise, AND ALSO DON'T HAVE any other use of Promise:
-      { 'main-es5': ['core-js/modules/es.promise', 'core-js/modules/es.array.iterator', './index.js'] },
+    // entry: isEs6 ?
+    //   { main: './index.js', main2: './index2.js' } :
+    //   //// Select one of the following and comment the other option:
+    //   ////
+    //   //// If in your app, you BOTH USE dynamic import(), that requires Promise, AND ALSO DON'T HAVE any other use of Promise:
+    //   {
+    //     'main-es5': ['core-js/modules/es.promise', 'core-js/modules/es.array.iterator', './index.js'],
+    //     'main2-es5': ['core-js/modules/es.promise', 'core-js/modules/es.array.iterator', './index2.js']
+    //   },
+    entry: 
+      pages.reduce((acc, current) => {
+        acc[`${current.name}${willBeAnotherStage ? '-es6' : ''}`] = current.script; 
+        return acc;
+      }, {}),
     //// Otherwise:
     // { 'main-es5': './index.js' },
     ////
@@ -117,7 +130,7 @@ module.exports = (env, argv) => {
         {
           test: /\.(s?css|sass)$/,
           exclude: /\.useable\.(s?css|sass)$/,
-          use: !is2ndStage ? [
+          use: !willBeAnotherStage ? [
             {
               loader: isProd ? MiniCssExtractPlugin.loader : 'style-loader',
               options: { hmr: isDev, sourceMap: true }
@@ -184,7 +197,7 @@ module.exports = (env, argv) => {
         },
         {
           test: /.html$/,
-          exclude: /temp\.html$/,
+          exclude: /\.temp\.html$/,
           use: !isDevServer ? [
             {
               loader: 'html-loader',
@@ -210,39 +223,49 @@ module.exports = (env, argv) => {
             enforce: true,
             priority: 100,
             test: /(node_modules[\\/](@babel|core-js|whatwg))|(src[\\/]dynamic-polyfills)/,
-            name: isEs6 ? 'dynamic-polyfills' : 'dynamic-polyfills-es5'
+            name: willBeAnotherStage ? 'dynamic-polyfills-es6' : 'dynamic-polyfills'
           },
           'static-polyfills': {
             chunks: 'initial',
             enforce: true,
             priority: 90,
             test: /node_modules[\\/](@babel|core-js|whatwg|regenerator)/,
-            name: isEs6 ? 'polyfills' : 'polyfills-es5'
+            name: willBeAnotherStage ? 'polyfills-es6' : 'polyfills'
           },
           vendors: {
             chunks: 'all',
             enforce: true,
             priority: 80,
             test: /node_modules/,
-            name: isEs6 ? 'vendors' : 'vendors-es5'
+            name: willBeAnotherStage ? 'vendors-es6' : 'vendors'
           }
         }
       }
     },
     plugins: [
       !isDevServer && !is2ndStage && new CleanWebpackPlugin(buildPath, {}),
-      isProd && !is2ndStage && new MiniCssExtractPlugin({
-        filename: 'style.[contenthash:8].css'
+      isProd && !willBeAnotherStage && new MiniCssExtractPlugin({
+        filename: '[name].[contenthash:8].css'
       }),
-      new HtmlWebpackPlugin({
+      // new HtmlWebpackPlugin({
+      //   inject: true,
+      //   hash: isDev,
+      //   minify: isProd && !willBeAnotherStage ? htmlMinifySettings : false,
+      //   favicon: !is2ndStage ? 'favicon.ico' : '',
+      //   chunksSortMode: 'dependency',
+      //   template: is2ndStage ? `${buildPath}/temp.html` : 'index.html',
+      //   filename: willBeAnotherStage ? 'temp.html' : 'index.html'
+      // }),
+      ...pages.map(p => new HtmlWebpackPlugin({
         inject: true,
         hash: isDev,
         minify: isProd && !willBeAnotherStage ? htmlMinifySettings : false,
         favicon: !is2ndStage ? 'favicon.ico' : '',
         chunksSortMode: 'dependency',
-        template: is2ndStage ? `${buildPath}/temp.html` : 'index.html',
-        filename: willBeAnotherStage ? 'temp.html' : 'index.html'
-      }),
+        template: is2ndStage ? `${buildPath}/${p.name}.temp.html` : `${p.html}`,
+        filename: willBeAnotherStage ? `${p.name}.temp.html` : `${p.name}.html`,
+        chunks: ['dynamic-polyfills', 'dynamic-polyfills-es6', 'polyfills', 'polyfills-es6', 'vendors', 'vendors-es6', p.name, `${p.name}-es6`]
+      })),
       isEs6 && new ScriptExtHtmlWebpackPlugin({
         module: /\.m?js$/
       }),

@@ -15,7 +15,7 @@
     "build-es5-only": "SET NODE_ENV=production&& webpack --config webpack.config.js --mode production",
     "build-es6-only": "SET NODE_ENV=production&& webpack --config webpack.config.js --mode production --es=6",
     "build-dev": "SET NODE_ENV=development&& webpack --config webpack.config.js --mode development",
-    "postbuild-stage2-es5": "shx rm -f build/temp.html"
+    "postbuild-stage2-es5": "shx rm -f build/*.temp.html"
   },
   "devDependencies": {
     "@babel/core": "^7.4.3",
