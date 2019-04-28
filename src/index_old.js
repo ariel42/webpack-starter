@@ -22,7 +22,7 @@ function isBrowserMissingFeatures() {
   // return false;
 
   //// Sample code that can be used:
-  const neededFeatures = [window.Symbol /*, window.fetch /* /*, etc. */]; //KEEP IN SYNC with dynamic-polyfills.js
+  const neededFeatures = [window.Symbol /*, window.fetch */ /*, etc. */]; //KEEP IN SYNC with dynamic-polyfills.js
 
   let missingFeatures = false; //we use simple code, that doesn't need polyfills by itself
   for (var i = 0; i < neededFeatures.length; ++i) {

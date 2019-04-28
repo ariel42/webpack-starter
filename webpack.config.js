@@ -1,3 +1,8 @@
+//// If in your app, you BOTH USE dynamic import(), that requires Promise, 
+//// AND ALSO DON'T HAVE any other use of Promise - set true here, otherwise set false:
+const promiseUsedOnlyForDynamicImport = true;
+//// Also select correctly one of the 3 options inside src/static-polyfills.js.
+
 const path = require('path');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
@@ -30,7 +35,7 @@ const es6Browsers = [
 
 let pages = [
   { name: 'index', html: './index.html', script: './index.js' },
-  { name: 'test', html: './index2.html', script: './index2.js' }
+  { name: 'sample', html: './sample.html', script: './sample.js' }
 ]
 
 module.exports = (env, argv) => {
@@ -57,28 +62,22 @@ module.exports = (env, argv) => {
     useShortDoctype: true
   };
 
+  const es5PolyfillsForDynamicImport = ['core-js/modules/es.promise', 'core-js/modules/es.array.iterator'];
+
   let config = {
     mode: isDev ? 'development' : 'production', //if not set by cli
     //dev mode always uses ES5 polyfills, so it is possible to develop also on legacy browsers
     context: srcPath,
-    // entry: isEs6 ?
-    //   { main: './index.js', main2: './index2.js' } :
-    //   //// Select one of the following and comment the other option:
-    //   ////
-    //   //// If in your app, you BOTH USE dynamic import(), that requires Promise, AND ALSO DON'T HAVE any other use of Promise:
-    //   {
-    //     'main-es5': ['core-js/modules/es.promise', 'core-js/modules/es.array.iterator', './index.js'],
-    //     'main2-es5': ['core-js/modules/es.promise', 'core-js/modules/es.array.iterator', './index2.js']
-    //   },
-    entry: 
-      pages.reduce((acc, current) => {
-        acc[`${current.name}${willBeAnotherStage ? '-es6' : ''}`] = current.script; 
-        return acc;
-      }, {}),
-    //// Otherwise:
-    // { 'main-es5': './index.js' },
-    ////
-    //// Also select correctly one of 3 options inside src/static-polyfills.js.
+    // the entry point should be for example { 'index-es6': './index.js', 'sample-es6': './sample.js' } for es6,
+    // or { 'index' : ['core-js/modules/es.promise', 'core-js/modules/es.array.iterator', './index.js'], 
+    //      'sample': ['core-js/modules/es.promise', 'core-js/modules/es.array.iterator', './sample.js']} for es5
+    entry: pages.reduce((acc, current) => {
+      acc[`${current.name}${willBeAnotherStage ? '-es6' : ''}`] =
+        !isEs6 && promiseUsedOnlyForDynamicImport ?
+          [...es5PolyfillsForDynamicImport, current.script] :
+          current.script;
+      return acc;
+    }, {}),
     output: {
       path: buildPath,
       filename: isDev ? '[name].[hash:8].js' : '[name].[chunkhash:8].js',
@@ -247,15 +246,6 @@ module.exports = (env, argv) => {
       isProd && !willBeAnotherStage && new MiniCssExtractPlugin({
         filename: '[name].[contenthash:8].css'
       }),
-      // new HtmlWebpackPlugin({
-      //   inject: true,
-      //   hash: isDev,
-      //   minify: isProd && !willBeAnotherStage ? htmlMinifySettings : false,
-      //   favicon: !is2ndStage ? 'favicon.ico' : '',
-      //   chunksSortMode: 'dependency',
-      //   template: is2ndStage ? `${buildPath}/temp.html` : 'index.html',
-      //   filename: willBeAnotherStage ? 'temp.html' : 'index.html'
-      // }),
       ...pages.map(p => new HtmlWebpackPlugin({
         inject: true,
         hash: isDev,
