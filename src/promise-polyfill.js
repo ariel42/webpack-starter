@@ -1,21 +1,5 @@
-//// The selected polyfills here will be always downloaded statically by polyfills.js bundle, for both legacy ES5 Browsers and modern ES6 browsers.
-//// The output for ES6 Browsers may be smaller, since the native ES6 syntax is more compact,
-//// and also modern browsers support natively many ES features without polyfills.
-
-import 'regenerator-runtime/runtime'; // keep this line here anyway
-
-//// Select polyfills to load statically:
-// import ...
-// import ...
-// import ...
-
-//// For loading all ES stable features - uncomment this, it costs about 23kb/34kb gzipped for ES6/ES5 browsers:
-// import 'core-js/stable';
-
-/* #region Promise polyfill selection: */
-////
-//// The idea is that it is not needed for modern ES6 browsers, if the only use of Promise in your app 
-//// is for dynamic import() of scripts. The native Promise implementations in those browsers 
+//// The idea here is the Promise polyfill is not needed for modern ES6 browsers, if the only use of Promise 
+//// in your app is for dynamic import() of other modules. The native Promise implementations in those browsers 
 //// should be good enough for that, even if they aren't 100% compliant with the most recent standard.
 ////
 //// Please choose one of the following:
@@ -28,7 +12,7 @@ import 'regenerator-runtime/runtime'; // keep this line here anyway
 
 //// 3. If in your app, you HAVE any other of use of Promise that not related to dynamic import():
 //// Set promiseUsedOnlyForDynamicImport = false at the beginning of webpack.config.js, and also you have to import Promise:
-//// If you imported all ES features above - nothing more is required.
+//// If you imported all ES features at the beginning of polyfills.js - nothing more is required.
 //// Otherwise, you have to import Promise here. Either use this:
 ////
 // import 'core-js/es/promise'; // for full Promise with Promise#finally, up to 8kb gzipped with its dependencies.
@@ -38,6 +22,3 @@ import 'regenerator-runtime/runtime'; // keep this line here anyway
 ////
 // import 'core-js/modules/es.promise';
 // import 'core-js/modules/es.array.iterator';
-
-////
-/* #endregion of Promise polyfill selection */

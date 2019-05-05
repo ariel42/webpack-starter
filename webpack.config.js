@@ -1,6 +1,6 @@
 //// If in your app, you BOTH USE dynamic import(), that requires Promise, 
 //// AND ALSO DON'T HAVE any other use of Promise - set true here, otherwise set false:
-const promiseUsedOnlyForDynamicImport = true;
+const promiseUsedOnlyForDynamicImport = false;
 //// Also select correctly one of the 3 options inside src/static-polyfills.js.
 
 const path = require('path');
