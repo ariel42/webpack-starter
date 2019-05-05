@@ -1,7 +1,7 @@
 /* #region Static polyfills loading */
 
 //// The selected polyfills here will be always downloaded statically by polyfills.js bundle, for both legacy ES5 Browsers and modern ES6 browsers.
-//// But the output for ES6 Browsers may be smaller, since the native ES6 syntax is more compact,
+//// But the output bundle that will be built for ES6 Browsers may be smaller, since the native ES6 syntax is more compact,
 //// and also modern browsers support natively many ES features without polyfills, so they won't be included in the build.
 
 import 'regenerator-runtime/runtime'; // keep this line here anyway
