@@ -9,13 +9,14 @@ import 'regenerator-runtime/runtime'; // keep this line here anyway
 //// For loading all ES stable features, including Promise - uncomment this, it costs about 23kb/34kb gzipped for ES6/ES5 browsers:
 import 'core-js/stable';
 
-// If you didn't import all ES fetaures, then import promise polyfill and select the correct option from the 3 options in that file:
-// import './promise-polyfill';
+//// Import the Promise polyfill here if you didn't import all ES fetaures above, and also you have in your app
+//// ANY usage of Promise that is NOT RELATED to dynamic import() (which is also Promise based):
+// import 'core-js/es/promise';
 
-//// ...and also import any other core-js polyfills to load statically:
-// import ...
-// import ...
-// import ...
+//// Import here any other core-js polyfills that were not included above:
+// import 'core-js/...'
+// import 'core-js/...'
+// import 'core-js/...'
 
 /* #endregion of Static polyfills loading */
 
@@ -24,10 +25,10 @@ import 'core-js/stable';
 
 //// The dynamic polyfills bundle (dynamic-polyfills.js) will be downloaded only after a runtime check that the current browser doesn't support
 //// all the needed features (either natively or by the above static polyfills), so the browser will not download it at all if anything is already supported.
-//// Make sure that you imported Promise polyfill correctly above.
+//// Please set appUsesDynamicImport to true at the beginning of webpack.config.js, to be able to use the dynamic import() here.
 
 //// Here is a sample code that can be used for runtime browser features detection, the important things are 
-//// to keep in sync with dynamic-polyfills.js, and to write simple code that doesn't need any polyfills by itself:
+//// to keep in sync with the imports inside dynamic-polyfills.js file, and to write simple code that doesn't need any polyfills by itself:
 function isBrowserMissingFeatures() {
     const neededFeatures = [window.Symbol /*, window.fetch */ /*, etc. */]; //KEEP IN SYNC with dynamic-polyfills.js
 
@@ -48,8 +49,10 @@ let polyfills = {
                 callback();
             });
         }
-        else {
-            callback();
+        else { //launch the callback asynchronously - Don't Release Zalgo!
+            setTimeout(function () {
+                callback();
+            }, 0);
         }
     }
 }

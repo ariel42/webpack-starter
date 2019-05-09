@@ -1,7 +1,13 @@
-//// If in your app, you BOTH USE dynamic import(), that requires Promise, 
-//// AND ALSO DON'T HAVE any other use of Promise - set true here, otherwise set false:
-const promiseUsedOnlyForDynamicImport = false;
-//// Also select correctly one of the 3 options inside src/static-polyfills.js.
+//// Set true here if you use dynamic import() anywhere in your app,
+//// either in polyfills.js for loading dynamic polyfills or in any other place:
+const appUsesDynamicImport = true;
+//// The idea here is that the Promise polyfill is not needed for modern ES6 browsers, if the only use of Promise 
+//// in the app is for dynamic import() of other modules. The native Promise implementations in those browsers 
+//// should be good enough for that, even if they aren't 100% compliant with the most recent standard.
+//// So if appUsesDynamicImport is true then we import Promise here only for ES5 browsers, and it doesn't prevent us 
+//// to import it also in polyfills.js for both ES5 and ES6 browsers, if it is needed for other purposes in the app.
+
+//// Also select correctly the static and the dynamic polyfills for your app in polyfills.js, as described in the comments there.
 
 const path = require('path');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
@@ -22,7 +28,7 @@ const allSupportedBrowsers = [
 //Modern browsers that support ES6 modules natively, based od on https://github.com/babel/babel/blob/master/packages/babel-preset-env/data/built-in-modules.json
 //To test the global usage of those browsers: https://browserl.ist/?q=Chrome%3E%3D61%2C+ChromeAndroid%3E%3D61%2C+Safari%3E%3D11%2C+iOS%3E%3D11%2C+Firefox%3E%3D60%2C+FirefoxAndroid%3E%3D64%2C+Opera%3E%3D48%2C+OperaMobile%3E%3D48%2C+Edge%3E%3D16
 //We use Safari 11 to avoid the problems in version 10.1, that old version is almost not in use today.
-//For this customization we don't use targets.esmodules=true, but provide the browsers manually:
+//That customization requires us not to use targets.esmodules=true, but to provide the browsers manually instead:
 const es6Browsers = [
   'Chrome >= 61',
   'Safari >= 11',
@@ -73,7 +79,7 @@ module.exports = (env, argv) => {
     //      'sample': ['core-js/modules/es.promise', 'core-js/modules/es.array.iterator', './sample.js']} for es5
     entry: pages.reduce((acc, current) => {
       acc[`${current.name}${willBeAnotherStage ? '-es6' : ''}`] =
-        !isEs6 && promiseUsedOnlyForDynamicImport ?
+        !isEs6 && appUsesDynamicImport ?
           [...es5PolyfillsForDynamicImport, current.script] :
           current.script;
       return acc;
