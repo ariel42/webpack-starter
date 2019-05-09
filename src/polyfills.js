@@ -25,6 +25,7 @@ import 'core-js/stable';
 
 //// The dynamic polyfills bundle (dynamic-polyfills.js) will be downloaded only after a runtime check that the current browser doesn't support
 //// all the needed features (either natively or by the above static polyfills), so the browser will not download it at all if anything is already supported.
+
 //// Please set appUsesDynamicImport to true at the beginning of webpack.config.js, to be able to use the dynamic import() here.
 
 //// Here is a sample code that can be used for runtime browser features detection, the important things are 
