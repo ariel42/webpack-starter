@@ -1,8 +1,4 @@
-//// Please follow the polyfills instructions at polyfills.js remarks, and keep the following import at the header of the file:
-import { polyfills } from './polyfills';
-
-//// Your global imports that used in all the pages go here:
-import './global';
+//// Please follow the instructions at the beginning of webpack.config.js, for global configuration of your app.
 
 //// Your specific imports for this page go here:
 import './style/main.css';
@@ -12,16 +8,17 @@ import useableCss from './style/main.useable.css';
 import useableSass from './style/main.useable.sass';
 import useableScss from './style/main.useable.scss';
 
-//// If you need dynamic polyfills by runtime check, then keep this line here after the imports,
-//// and implement the function isBrowserMissingFeatures in polyfills.js according to your needs:
-polyfills.loadDynamicAndThen(pageMain);
+//// If you want to use dynamic polyfills loading, and configured it at step 2 of the instructions, use these lines:
+import { dynamicPolyfillsLoader } from './global/dynamic-polyfills-loader';
+dynamicPolyfillsLoader.loadIfNeededAndThen(pageMain);
 
-//// Otherwise if you don't need dynamic polyfills, just remark it and call this instead:
+//// Otherwise if you don't need dynamic polyfills loading, just call pageMain() instead:
 // pageMain();
 
-//// Your specific page code goes here, inside the function:
+//// Your specific page code goes here, inside this function:
 function pageMain() {
-  //ensure that Symbol if working, even in old browsers:
+  //ensure that Symbol if working, even in old browsers, since it is included in the 
+  //dynamic-polyfills bundle that was downloaded dynamically by them (and only by them):
   var testSymbol = Symbol('Test');
   window[testSymbol] = 'Hello world, Symbol is working!';
   console.log(window[testSymbol]);

@@ -1,13 +1,40 @@
-//// Configuration:
+//// Instructions:
 
-//// 1. Please select correctly the static and the dynamic polyfills for your app in polyfills.js, as described in the comments there.
+//// 1. Please select correctly the static polyfills for your app by editing the file
+////    global/static-polyfills.js, as described in its comments.
 
-//// 2. Set true here if you use dynamic import() anywhere in your app,
-////    either in polyfills.js for loading dynamic polyfills or in any other place:
-const appUsesDynamicImport = true; // see description at the bottom of this file
+//// 2. If you want to use dynamic ployfills loading by browser feature detection, edit the files
+////    global/dynamic-polyfills-loader.js and global/dynamic-polyfills.js, as described in their comments.
+////    It implements the ideas of this great artice by Philip Walton: https://philipwalton.com/articles/loading-polyfills-only-when-needed/
 
-//// 3. Select the dev server port to be used when running npm start:
+//// 3. Select global imports that you would like to import to all your app pages, by editing the file
+////    global/global-imports.js.
+
+//// 4. Set true here if you use dynamic import() anywhere in your app,
+////    either in dynamic-polyfills-loader.js above for loading dynamic polyfills, or in any other place:
+const useDynamicImport = true; // see the description at the bottom of this file
+
+//// 5. If you have any usgae of Promise in your app that is NOT RELATED to dynamic import above (that is also Promise based),
+////    e.g. using Fetch API, creating Promise objects manually, etc., set true here:
+const usePromiseForAnythingElse = false;
+
+//// 6. KEEP THE FOLLOWING CONVENTION: Make sure that each html file and its main script file have the same filename (e.g. index.html, index.js),
+////    the following Webpack configuraton assumes this to make it easy to build multiple pages app.
+
+//// 7. Select the dev server port - it runs your app with Hot Module Replacement, start it with `npm start`:
 const devPort = 4242;
+
+//// 8. run `npm run build` to run the production build (saved in build folder), it includes html files that refer both to smaller 
+////    ES6 scripts for modern browsers, and also to normal ES5 scripts for legacy browsers that won't be downloaded by modern browsers,
+////    by using the nomodule attribute. Anything is optimized and minimized by Webpack tools.
+////    See this another great Philip Walton's article: https://philipwalton.com/articles/deploying-es2015-code-in-production-today/
+////
+////    To build and use ES5 scripts only, if is is needed for some reason, run `npm run build-es5-only`.
+////
+////    The polyfills and other global bundles will be shared among all of the pages, so the browser will have to download them only once, 
+////    when visiting the first page of your app. On the next pages visits it will get them from its cache.
+
+////    
 
 const fs = require('fs');
 const path = require('path');
@@ -42,7 +69,6 @@ const es6Browsers = [
 ];
 
 // Build all the html files in src folder.
-// BY CONVENTION - if there is also a .js file with the same file name, it assumed to be the script file of that html (e.g. index.html, index.js):
 let dir = fs.readdirSync('./src');
 let htmlFiles = dir.filter(f => f.match(/.+\.html$/));
 let pages = [];
@@ -83,7 +109,16 @@ module.exports = (env, argv) => {
     useShortDoctype: true
   };
 
-  const es5PolyfillsForDynamicImport = ['core-js/modules/es.promise', 'core-js/modules/es.array.iterator'];
+  let es6EntryFiles = [path.join(srcPath, 'global', 'static-polyfills'), path.join(srcPath, 'global', 'global-imports')];
+  let es5EntryFiles;
+
+  if (usePromiseForAnythingElse) {
+    es6EntryFiles.unshift('core-js/es/promise');
+    es5EntryFiles = es6EntryFiles.slice();
+  }
+  else if (useDynamicImport) {
+    es5EntryFiles = ['core-js/es/promise', ...es6EntryFiles];
+  }
 
   let config = {
     mode: isDev ? 'development' : 'production', //if not set by cli
@@ -95,9 +130,7 @@ module.exports = (env, argv) => {
     entry: pages.reduce((acc, current) => {
       acc[`${current.name}${willBeAnotherStage ? '-es6' : ''}`] =
         current.script ?
-          !isEs6 && appUsesDynamicImport ?
-            [...es5PolyfillsForDynamicImport, current.script]
-            : current.script
+          (isEs6 ? es6EntryFiles : es5EntryFiles).concat(current.script)
           : current.html //if no script - just process the html via html-loader, for images processing and copying to build folder
       return acc;
     }, {}),
@@ -240,26 +273,26 @@ module.exports = (env, argv) => {
     optimization: {
       splitChunks: {
         cacheGroups: {
-          'dynamic-polyfills': {
-            chunks: 'async',
-            enforce: true,
-            priority: 100,
-            test: /(node_modules[\\/](@babel|core-js|whatwg))|(src[\\/]dynamic-polyfills)/,
-            name: willBeAnotherStage ? 'dynamic-polyfills-es6' : 'dynamic-polyfills'
-          },
           'static-polyfills': {
             chunks: 'initial',
             enforce: true,
-            priority: 90,
+            priority: 100,
             test: /node_modules[\\/](@babel|core-js|whatwg|regenerator)/,
             name: willBeAnotherStage ? 'polyfills-es6' : 'polyfills'
           },
           vendors: {
-            chunks: 'all',
+            chunks: 'initial',
             enforce: true,
-            priority: 80,
+            priority: 90,
             test: /node_modules/,
             name: willBeAnotherStage ? 'vendors-es6' : 'vendors'
+          },
+          'dynamic-polyfills': {
+            chunks: 'async',
+            enforce: true,
+            priority: 80,
+            test: /\.js$/,
+            name: willBeAnotherStage ? 'dynamic-polyfills-es6' : 'dynamic-polyfills'
           }
         }
       }
@@ -296,7 +329,7 @@ module.exports = (env, argv) => {
       !willBeAnotherStage && new FileManagerPlugin({
         onEnd: {
           delete: //delete temp html files that were generated in the es6 building stage (first stage):
-             [`${buildPath}/*.temp.html`]
+            [`${buildPath}/*.temp.html`]
               //and also unused default script bundles, that were built for html files that don't have a script anyway:
               .concat(pages.filter(p => !p.script).map(p => `${buildPath}/${p.name}*.js*`))
         }
@@ -307,8 +340,7 @@ module.exports = (env, argv) => {
   return config;
 };
 
-//// The idea here with appUsesDynamicImport is that the Promise polyfill is not needed for modern ES6 browsers,
+//// The idea here with useDynamicImport is that the Promise polyfill is not needed for modern ES6 browsers,
 //// if the only use of Promise in the app is for dynamic import() of other modules. The native Promise implementations 
 //// in those browsers should be good enough for that, even if they aren't 100% compliant with the most recent standard.
-//// So if appUsesDynamicImport is true then we import Promise here only for ES5 browsers, and it doesn't prevent us 
-//// to import it also in polyfills.js for both ES5 and ES6 browsers, if it is needed for other purposes in the app.
+//// So if useDynamicImport is true then we import Promise here only for ES5 browsers.
