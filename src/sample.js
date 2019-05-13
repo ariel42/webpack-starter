@@ -12,7 +12,7 @@ import useableScss from './style/main.useable.scss';
 import { dynamicPolyfillsLoader } from './global/dynamic-polyfills-loader';
 dynamicPolyfillsLoader.loadIfNeededAndThen(pageMain);
 
-//// Otherwise if you don't need dynamic polyfills loading, just call pageMain() instead:
+//// Otherwise if you don't need dynamic polyfills loading, remark those lines and just call pageMain() instead:
 // pageMain();
 
 //// Your specific page code goes here, inside this function:
