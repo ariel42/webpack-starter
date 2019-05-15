@@ -7,24 +7,21 @@
 ////    global/dynamic-polyfills-loader.js and global/dynamic-polyfills.js, as described in their comments.
 ////    It implements the ideas of this great artice by Philip Walton: https://philipwalton.com/articles/loading-polyfills-only-when-needed/
 
-//// 3. Select global imports that you would like to import to all your app pages, by editing the file
-////    global/global-imports.js.
-
-//// 4. Set true here if you use dynamic import() anywhere in your app,
+//// 3. Set true here if you use dynamic import() anywhere in your app,
 ////    either in dynamic-polyfills-loader.js above for loading dynamic polyfills, or in any other place:
 const useDynamicImport = true; // see the description at the bottom of this file
 
-//// 5. If you have any usgae of Promise in your app that is NOT RELATED to dynamic import above (that is also Promise based),
-////    e.g. using Fetch API, creating Promise objects manually, etc., set true here:
+//// 4. If you have any usgae of Promise in your app that is NOT RELATED to dynamic import above (which is also Promise based),
+////    like using Fetch API or dealing with Promise directly, set true here:
 const usePromiseForAnythingElse = false;
 
-//// 6. KEEP THE FOLLOWING CONVENTION: Make sure that each html file and its main script file have the same filename (e.g. index.html, index.js),
+//// 5. KEEP THE FOLLOWING CONVENTION: Make sure that each html file and its main script file have the same filename (e.g. index.html, index.js),
 ////    the following Webpack configuraton assumes this to make it easy to build multiple pages app.
 
-//// 7. Select the dev server port - it runs your app with Hot Module Replacement, start it with `npm start`:
+//// 6. Select the dev server port - it runs your app with Hot Module Replacement, start it with `npm start`:
 const devPort = 4242;
 
-//// 8. run `npm run build` to run the production build (saved in build folder), it includes html files that refer both to smaller 
+//// 7. run `npm run build` to run the production build (saved in build folder), it includes html files that refer both to smaller 
 ////    ES6 scripts for modern browsers, and also to normal ES5 scripts for legacy browsers that won't be downloaded by modern browsers,
 ////    by using the nomodule attribute. Anything is optimized and minimized by Webpack tools.
 ////    See this another great Philip Walton's article: https://philipwalton.com/articles/deploying-es2015-code-in-production-today/
@@ -109,7 +106,7 @@ module.exports = (env, argv) => {
     useShortDoctype: true
   };
 
-  let es6EntryFiles = [path.join(srcPath, 'global', 'static-polyfills'), path.join(srcPath, 'global', 'global-imports')];
+  let es6EntryFiles = [path.join(srcPath, 'global', 'static-polyfills')];
   let es5EntryFiles;
 
   if (usePromiseForAnythingElse) {
@@ -125,8 +122,8 @@ module.exports = (env, argv) => {
     //dev mode always uses ES5 polyfills, so it is possible to develop also on legacy browsers
     context: srcPath,
     // the entry point should be for example { 'index-es6': './index.js', 'sample-es6': './sample.js' } for es6,
-    // or { 'index' : ['core-js/modules/es.promise', 'core-js/modules/es.array.iterator', './index.js'], 
-    //      'sample': ['core-js/modules/es.promise', 'core-js/modules/es.array.iterator', './sample.js']} for es5
+    // or { 'index' : ['core-js/es/promise', './index.js'], 
+    //      'sample': ['core-js/es/promise', './sample.js']} for es5
     entry: pages.reduce((acc, current) => {
       acc[`${current.name}${willBeAnotherStage ? '-es6' : ''}`] =
         current.script ?
