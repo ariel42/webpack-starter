@@ -1,17 +1,12 @@
 //// The selected polyfills here will be always downloaded statically by polyfills.js bundle, for both legacy ES5 Browsers and modern ES6 browsers.
-//// But the output bundle that will be built for ES6 Browsers may be smaller, since the native ES6 syntax is more compact,
-//// and also modern browsers support natively many ES features without polyfills, so they won't be included in the build.
+//// But the output bundle that will be built for ES6 Browsers should be smaller, since the native ES6 syntax is more compact,
+//// and also modern browsers support natively many ES features without polyfills, so they won't be included in the bundle.
 
-import 'regenerator-runtime/runtime'; // keep this line here anyway
-
-//// For loading all ES stable features - uncomment this, it costs about 23kb/34kb gzipped for ES6/ES5 browsers:
-// import 'core-js/stable';
+//// Typical polyfills:
+import 'core-js/es'; //All ES stable language features, including Promise. Costs about 17kb/27kb gzipped for ES6/ES5 browsers.
+import 'regenerator-runtime/runtime'; //Needed only for legacy browsers (generators support), ~3kb gzipped.
 
 //// Import here any other core-js polyfills that were not included above.
-////
-//// DON'T IMPORT Promise polyfill here, it will be included automatically if needed by webpack.config.js,
-//// according to your configuration settings at the beginning of that file:
-////
 // import 'core-js/...' ;
 // import 'core-js/...' ;
 // import 'core-js/...' ;

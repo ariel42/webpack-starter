@@ -17,11 +17,9 @@ dynamicPolyfillsLoader.loadIfNeededAndThen(pageMain);
 
 //// Your specific page code goes here, inside this function:
 function pageMain() {
-  //ensure that Symbol if working, even in old browsers, since it is included in the 
-  //dynamic-polyfills bundle that was downloaded dynamically by them (and only by them):
-  var testSymbol = Symbol('Test');
-  window[testSymbol] = 'Hello world, Symbol is working!';
-  console.log(window[testSymbol]);
+  //ensure that Fetch API exists, even in old browsers, since it is included in the 
+  //dynamic-polyfills bundle that was downloaded dynamically by them, after the runtime checking above:
+  console.log(`Hello World! Is Fetch Api available? ${!!window.fetch}!`);
 
   if (module.hot) { //should be true only if we run `npm start`
     console.log('Hot Module Replacement (HMR) is working!');

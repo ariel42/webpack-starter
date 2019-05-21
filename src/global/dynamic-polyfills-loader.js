@@ -7,11 +7,13 @@
 //// Here is a sample code that can be used, the important things are to keep in sync with the imports inside 
 //// dynamic-polyfills.js file, and to write a simple code that doesn't need any polyfills by itself:
 function isBrowserMissingFeatures() {
-    const neededFeatures = [window.Symbol /*, window.fetch */ /*, etc. */]; //KEEP IN SYNC with dynamic-polyfills.js
+    var webUrlApi = require('core-js/internals/native-url'); //Web URL and URLSearchParams APIs (URL depends on URLSearchParams)
+
+    const neededFeatures = [webUrlApi, window.fetch /*, etc. */]; //KEEP IN SYNC with dynamic-polyfills.js
 
     let missingFeatures = false; //we use simple code, that doesn't need polyfills by itself
     for (var i = 0; i < neededFeatures.length; ++i) {
-        if (neededFeatures[i] == null) {
+        if (!neededFeatures[i]) {
             missingFeatures = true;
             break;
         }
