@@ -36,10 +36,8 @@ const FileManagerPlugin = require('filemanager-webpack-plugin');
 
 //definition for all the browsers that should be supported by your app:
 const allSupportedBrowsers = [
-  '>0.2%',
+  '> 0.2%',
   'not dead',
-  'not op_mini all',
-  'Firefox ESR',
   'ie >= 9'
 ];
 
@@ -54,7 +52,9 @@ const es6Browsers = [
   'Firefox >= 60',
   'FirefoxAndroid >= 64',
   'Opera >= 48',
-  'Edge >= 16'
+  'Edge >= 16',
+  'not <= 0.2%',
+  'not dead'
 ];
 
 // Build all the html files in src folder.
