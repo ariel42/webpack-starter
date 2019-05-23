@@ -3,9 +3,10 @@
 //// 1. Please select correctly the static polyfills for your app by editing the file
 ////    global/static-polyfills.js, as described in its comments.
 
-//// 2. If you want to use dynamic ployfills loading by browser feature detection, edit the files
-////    global/dynamic-polyfills-loader.js and global/dynamic-polyfills.js, as described in their comments.
+//// 2. If you want to use dynamic ployfills loading by browser feature detection - set true here,
+////    and edit the files global/page-initializer.js and global/dynamic-polyfills.js, as described in their comments.
 ////    It implements the ideas of this great artice by Philip Walton: https://philipwalton.com/articles/loading-polyfills-only-when-needed/
+const useDynamicPolyfills = true;
 
 //// 3. KEEP THE FOLLOWING CONVENTION: Make sure that each html file and its main script file have the same filename (e.g. index.html, index.js),
 ////    the Webpack configuraton here assumes this to make it easy to build multiple pages app.
@@ -25,8 +26,9 @@ const devPort = 4242;
 
 ////    
 
-const fs = require('fs');
+const webpack = require('webpack');
 const path = require('path');
+var glob = require("glob")
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
@@ -58,17 +60,17 @@ const es6Browsers = [
 ];
 
 // Build all the html files in src folder.
-let dir = fs.readdirSync('./src');
+let dir = glob.sync('./src/**/*.+(html|js)');
 let htmlFiles = dir.filter(f => f.match(/.+\.html$/));
 let pages = [];
 
 htmlFiles.forEach(f => {
-  let name = f.replace(/\.[^/.]+$/, ''); //without the extension
-  let scriptFile = name + '.js';
+  let script = f.replace(/\.[^/.]+$/, '.js');
+  let scriptExist = dir.find(s => s === script);
   let page = {
-    name,
-    html: './' + f,
-    script: dir.find(s => s === scriptFile) ? './' + scriptFile : undefined
+    name: path.basename(f, path.extname(f)),
+    html: '.' + f.slice('./src'.length),
+    script: scriptExist ? '.' + script.slice('./src'.length) : undefined
   };
 
   pages.push(page);
@@ -278,6 +280,9 @@ module.exports = (env, argv) => {
       }
     },
     plugins: [
+      new webpack.DefinePlugin({
+        'USE_DYNAMIC_POLYFILLS': JSON.stringify(useDynamicPolyfills)
+      }),
       !isDevServer && !is2ndStage && new CleanWebpackPlugin(buildPath, {}),
       isProd && !willBeAnotherStage && new MiniCssExtractPlugin({
         filename: '[name].[contenthash:8].css'
@@ -289,7 +294,7 @@ module.exports = (env, argv) => {
         favicon: !is2ndStage ? 'favicon.ico' : '',
         chunksSortMode: 'dependency',
         template: is2ndStage ? `${buildPath}/${p.name}.temp.html` : `${p.html}`,
-        filename: willBeAnotherStage ? `${p.name}.temp.html` : `${p.name}.html`,
+        filename: willBeAnotherStage ? `${p.name}.temp.html` : `${p.html}`,
         chunks: ['dynamic-polyfills', 'dynamic-polyfills-es6', 'polyfills', 'polyfills-es6', 'vendors', 'vendors-es6', p.name, `${p.name}-es6`]
       })),
       isEs6 && new ScriptExtHtmlWebpackPlugin({

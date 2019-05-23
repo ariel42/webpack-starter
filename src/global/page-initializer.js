@@ -21,16 +21,25 @@ function isBrowserMissingFeatures() {
     return missingFeatures;
 }
 
-// Please don't change this loader code:
-let dynamicPolyfillsLoader = {
-    loadIfNeededAndThen: function (callback) {
+function setLinksWithOutputPath() {
+    document.querySelectorAll('.usePublicPath').forEach(el =>
+        el.setAttribute('href', __webpack_public_path__ + el.getAttribute('href')));
+}
+
+let initPageAndThen = USE_DYNAMIC_POLYFILLS ?
+    function (callback) {
+        setLinksWithOutputPath();
+
         if (isBrowserMissingFeatures()) {
             import('./dynamic-polyfills').then(callback);
         }
         else { //launch the callback asynchronously - don't release Zalgo!
             setTimeout(callback, 0);
         }
-    }
-}
+    } :
+    function (callback) {
+        setLinksWithOutputPath();
+        setTimeout(callback, 0);
+    };
 
-export { dynamicPolyfillsLoader };
+export { initPageAndThen };

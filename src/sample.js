@@ -8,13 +8,6 @@ import useableCss from './style/main.useable.css';
 import useableSass from './style/main.useable.sass';
 import useableScss from './style/main.useable.scss';
 
-//// If you want to use dynamic polyfills loading, and configured it at step 2 of the instructions, use these lines:
-import { dynamicPolyfillsLoader } from './global/dynamic-polyfills-loader';
-dynamicPolyfillsLoader.loadIfNeededAndThen(pageMain);
-
-//// Otherwise if you don't need dynamic polyfills loading, remark those lines and just call pageMain() instead:
-// pageMain();
-
 //// Your specific page code goes here, inside this function:
 function pageMain() {
   //ensure that Fetch API exists, even in old browsers, since it is included in the 
@@ -51,3 +44,7 @@ function switchUseableStyles(again) {
 
   }, 1000);
 }
+
+//// Leave those lines here to init the page (e.g. load dynamic polyfills if necessary):
+import { initPageAndThen } from './global/page-initializer';
+initPageAndThen(pageMain);
