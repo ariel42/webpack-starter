@@ -91,6 +91,11 @@ module.exports = (env, argv) => {
   const buildPath = path.resolve(__dirname, buildFolderName);
   const srcPath = path.resolve(__dirname, 'src');
 
+  let publicPath = isDevServer ? '/' : (argv['public-path'] || '/').trim();
+  if (publicPath && publicPath.substr(-1) !== '/') {
+    publicPath += '/';
+  }
+
   const htmlMinifySettings = {
     collapseWhitespace: true,
     removeComments: true,
@@ -121,7 +126,7 @@ module.exports = (env, argv) => {
       filename: isDev ? '[name].[hash:8].js' : '[name].[chunkhash:8].js',
       //Default deploy url of assets, for generating correct links relative to the html page. Can be overriden by loaders.
       //See examples at https://webpack.js.org/configuration/output#outputpublicpath
-      publicPath: isDevServer ? '/' : argv['public-path'] || '/'
+      publicPath: publicPath
     },
     devtool: isDev ? 'eval-source-map' : 'source-map',
     devServer: {
