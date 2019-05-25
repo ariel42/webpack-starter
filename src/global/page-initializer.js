@@ -21,15 +21,8 @@ function isBrowserMissingFeatures() {
     return missingFeatures;
 }
 
-function setLinksWithOutputPath() {
-    document.querySelectorAll('.usePublicPath').forEach(el =>
-        el.setAttribute('href', __webpack_public_path__ + el.getAttribute('href')));
-}
-
 let initPageAndThen = USE_DYNAMIC_POLYFILLS ?
     function (callback) {
-        setLinksWithOutputPath();
-
         if (isBrowserMissingFeatures()) {
             import('./dynamic-polyfills').then(callback);
         }
@@ -38,7 +31,6 @@ let initPageAndThen = USE_DYNAMIC_POLYFILLS ?
         }
     } :
     function (callback) {
-        setLinksWithOutputPath();
         setTimeout(callback, 0);
     };
 
