@@ -240,14 +240,15 @@ module.exports = (env, argv) => {
         {
           test: /.html$/,
           exclude: /\.temp\.html$/,
-          use: !isDevServer ? [
+          use: [
             {
               loader: 'html-loader',
               options: {
-                minimize: false
+                minimize: false,
+                interpolate: true
               }
             }
-          ] : 'raw-loader'
+          ]
         }
       ]
     },
