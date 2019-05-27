@@ -9,11 +9,12 @@
   "license": "MIT",
   "scripts": {
     "start": "SET NODE_ENV=development&& webpack-dev-server --config webpack.config.js --mode development --hot",
-    "build": "SET NODE_ENV=production&& npm run build-stage1-es6&& npm run build-stage2-es5",
-    "build-stage1-es6": "webpack --config webpack.config.js --mode production --stage=1 --es=6",
-    "build-stage2-es5": "webpack --config webpack.config.js --mode production --stage=2",
-    "build-es5-only": "SET NODE_ENV=production&& webpack --config webpack.config.js --mode production",
-    "build-es6-only": "SET NODE_ENV=production&& webpack --config webpack.config.js --mode production --es=6",
+    "build": "npm run build-stage1-es6&& npm run build-stage2-es5",
+    "build-stage1-es6": "npm run build-prod -- --stage=1 --es=6",
+    "build-stage2-es5": "npm run build-prod -- --stage=2",
+    "build-es5-only": "npm run build-prod",
+    "build-es6-only": "npm run build-prod -- --es=6",
+    "build-prod": "SET NODE_ENV=production&& webpack --config webpack.config.js --mode production",
     "build-dev": "SET NODE_ENV=development&& webpack --config webpack.config.js --mode development"
   },
   "devDependencies": {
@@ -23,7 +24,6 @@
     "autoprefixer": "^9.5.1",
     "babel-loader": "^8.0.6",
     "clean-webpack-plugin": "^1.0.0",
-    "css-loader": "^2.0.2",
     "cssnano": "^4.1.10",
     "eslint": "^5.16.0",
     "eslint-config-prettier": "^2.9.0",
@@ -44,15 +44,26 @@
     "stylelint": "^9.3.0",
     "stylelint-config-recommended": "^2.2.0",
     "stylelint-webpack-plugin": "^0.10.5",
+    "url-loader": "^1.1.2",
     "webpack": "^4.32.2",
     "webpack-cli": "^3.3.2",
     "webpack-dev-server": "^3.4.1"
   },
   "dependencies": {
-    "core-js": "^3.1.2",
+    "css-loader": "^2.0.2",
+    "core-js": "^3.1.3",
     "regenerator-runtime": "^0.13.2",
     "style-loader": "^0.23.1",
-    "webpack-node-externals": "^1.7.2",
     "whatwg-fetch": "^3.0.0"
-  }
+  },
+  "config": {
+    "public-path": "/"
+  },
+  "sideEffects": [
+    "./src/global/dynamic-polyfills.js",
+    "./src/global/static-polyfills.js",
+    "*.css",
+    "*.scss",
+    "*.sass"
+  ]
 }

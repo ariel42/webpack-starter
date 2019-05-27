@@ -1,12 +1,12 @@
 //// Please follow the instructions at the beginning of webpack.config.js, for global configuration of your app.
 
 //// Your specific imports for this page go here:
-import './style/main.css';
-import './style/main.sass';
-import './style/main.scss';
-import useableCss from './style/main.useable.css';
-import useableSass from './style/main.useable.sass';
-import useableScss from './style/main.useable.scss';
+import './style/sample.css';
+import './style/sample.sass';
+import './style/sample.scss';
+import useableCss from './style/sample.useable.css';
+import useableSass from './style/sample.useable.sass';
+import useableScss from './style/sample.useable.scss';
 
 //// Your specific page code goes here, inside this function:
 function pageMain() {

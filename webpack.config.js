@@ -91,7 +91,10 @@ module.exports = (env, argv) => {
   const buildPath = path.resolve(__dirname, buildFolderName);
   const srcPath = path.resolve(__dirname, 'src');
 
-  let publicPath = isDevServer ? '/' : (argv['public-path'] || '/').trim();
+  //Public path is the deploy url of the assets, for generating correct links relative to the html page. Can be overriden by loaders.
+  //See examples at https://webpack.js.org/configuration/output#outputpublicpath
+  //The priorities for production public path are: 1. PUBLIC_PATH environment variable, 2. config section of package.json, 3. / folder.
+  let publicPath = isDev ? '/' : (process.env.PUBLIC_PATH || process.env.npm_package_config_public_path || '/').trim();
   if (publicPath && publicPath.substr(-1) !== '/') {
     publicPath += '/';
   }
@@ -108,6 +111,7 @@ module.exports = (env, argv) => {
   let staticPolyfills = [path.join(srcPath, 'global', 'static-polyfills')];
 
   let config = {
+    target: 'web',
     mode: isDev ? 'development' : 'production', //if not set by cli
     //dev mode always uses ES5 polyfills, so it is possible to develop also on legacy browsers
     context: srcPath,
@@ -124,8 +128,6 @@ module.exports = (env, argv) => {
     output: {
       path: buildPath,
       filename: isDev ? '[name].[hash:8].js' : '[name].[chunkhash:8].js',
-      //Default deploy url of assets, for generating correct links relative to the html page. Can be overriden by loaders.
-      //See examples at https://webpack.js.org/configuration/output#outputpublicpath
       publicPath: publicPath
     },
     devtool: isDev ? 'eval-source-map' : 'source-map',
@@ -215,8 +217,16 @@ module.exports = (env, argv) => {
           ]
         },
         {
+          test: /images[\\/]url[\\/].+$/i,
+          use: [
+            {
+              loader: 'url-loader'
+            }
+          ]
+        },
+        {
           test: /\.(png|jpe?g|gif|svg|webp)$/i,
-          exclude: /[\\/]fonts[\\/].+\.svg$/i,
+          exclude: /([\\/]fonts[\\/].+\.svg|images[\\/]url[\\/].+)$/i,
           use: [
             {
               loader: 'file-loader',

@@ -15,9 +15,15 @@
   <noscript>You need to enable JavaScript to run this app.</noscript>
 
   <!-- Your content goes here: -->
-  <div>Hello, world!!!</div>
+  <div class="title">Hello, world!!!</div>
   <img src="images/world.png"> <br>
-  Is this app using dynamic polyfills? ${USE_DYNAMIC_POLYFILLS ? 'Yes!' : 'No.'}
+
+  ${USE_DYNAMIC_POLYFILLS ? 
+    `<img class="yes-no" src="images/url/yes.png">`
+    : 
+    `<img class="yes-no" src="images/url/no.png">`
+  }
+  Is this app using dynamic polyfills? ${USE_DYNAMIC_POLYFILLS ? 'Yes!' : 'No.'} (The yes/no icon is encoded and embedded in its tag.)
 </body>
 
 </html>

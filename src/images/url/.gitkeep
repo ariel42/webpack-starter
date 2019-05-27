@@ -1,0 +1,3 @@
+Please keep this file while the folder is empty, after that it is safe to delete it.
+
+Images from this folder will be embedded directly as base64 in their tags, for saving client requests.
