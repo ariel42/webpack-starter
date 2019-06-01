@@ -86,6 +86,7 @@ module.exports = (env, argv) => {
   const isEs6 = argv.es == 6;
   const willBeAnotherStage = argv.stage == 1;
   const is2ndStage = argv.stage == 2;
+  const withSourceMap = typeof argv['source-map'] === "undefined" || argv['source-map'];
 
   const buildFolderName = isDev ? 'build-dev' : 'build';
   const buildPath = path.resolve(__dirname, buildFolderName);
@@ -130,7 +131,7 @@ module.exports = (env, argv) => {
       filename: isDev ? '[name].[hash:8].js' : '[name].[chunkhash:8].js',
       publicPath: publicPath
     },
-    devtool: isDev ? 'eval-source-map' : 'source-map',
+    devtool: withSourceMap ? (isDev ? 'eval-source-map' : 'source-map') : false,
     devServer: {
       contentBase: srcPath,
       watchContentBase: true,
@@ -177,16 +178,16 @@ module.exports = (env, argv) => {
           use: !willBeAnotherStage ? [
             {
               loader: isProd ? MiniCssExtractPlugin.loader : 'style-loader',
-              options: { hmr: isDev, sourceMap: true }
+              options: { hmr: isDev, sourceMap: withSourceMap }
             },
             {
               loader: 'css-loader',
-              options: { importLoaders: 1, sourceMap: true }
+              options: { importLoaders: 1, sourceMap: withSourceMap }
             },
             {
               loader: 'postcss-loader',
               options: {
-                sourceMap: true,
+                sourceMap: withSourceMap,
                 ident: 'postcss',
                 plugins: (loader) => [require('postcss-cssnext')(), require('cssnano')()]
               }
@@ -199,16 +200,16 @@ module.exports = (env, argv) => {
           use: [
             {
               loader: 'style-loader/useable',
-              options: { hmr: isDev, sourceMap: true }
+              options: { hmr: isDev, sourceMap: withSourceMap }
             },
             {
               loader: 'css-loader',
-              options: { importLoaders: 1, sourceMap: true }
+              options: { importLoaders: 1, sourceMap: withSourceMap }
             },
             {
               loader: 'postcss-loader',
               options: {
-                sourceMap: true,
+                sourceMap: withSourceMap,
                 ident: 'postcss',
                 plugins: (loader) => [require('postcss-cssnext')(), require('cssnano')()]
               },
