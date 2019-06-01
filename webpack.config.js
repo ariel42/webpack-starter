@@ -305,14 +305,17 @@ module.exports = (env, argv) => {
         filename: '[name].[contenthash:8].css'
       }),
       ...pages.map(p => new HtmlWebpackPlugin({
-        inject: !!p.script,
         hash: isDev,
         minify: isProd && !willBeAnotherStage ? htmlMinifySettings : false,
         favicon: !is2ndStage ? 'favicon.ico' : '',
         chunksSortMode: 'dependency',
         template: is2ndStage ? `${buildPath}/${p.name}.temp.html` : `${p.html}`,
         filename: willBeAnotherStage ? `${p.name}.temp.html` : `${p.html}`,
-        chunks: ['dynamic-polyfills', 'dynamic-polyfills-es6', 'polyfills', 'polyfills-es6', 'vendors', 'vendors-es6', p.name, `${p.name}-es6`]
+        //inject: !!p.script,
+        //chunks: ['dynamic-polyfills', 'dynamic-polyfills-es6', 'polyfills', 'polyfills-es6', 'vendors', 'vendors-es6', p.name, `${p.name}-es6`]
+        //workaround for the problem of not injecting favicon if inject is false:
+        inject: true,
+        chunks: p.script ? ['dynamic-polyfills', 'dynamic-polyfills-es6', 'polyfills', 'polyfills-es6', 'vendors', 'vendors-es6', p.name, `${p.name}-es6`] : []
       })),
       isEs6 && new ScriptExtHtmlWebpackPlugin({
         module: /\.m?js$/
