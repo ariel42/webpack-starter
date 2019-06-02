@@ -10,6 +10,6 @@ function pageMain() {
     console.log('Hello Webpack!');
 }
 
-//// Leave those lines here to init the page (e.g. load dynamic polyfills if necessary):
-import { initPageAndThen } from './global/page-initializer';
-initPageAndThen(pageMain);
+//// Leave those lines here to init and run the page (e.g. load dynamic polyfills if necessary):
+import { initAndRunPage } from './global/page-initializer';
+initAndRunPage(pageMain);

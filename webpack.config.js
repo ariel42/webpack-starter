@@ -86,7 +86,7 @@ module.exports = (env, argv) => {
   const isEs6 = argv.es == 6;
   const willBeAnotherStage = argv.stage == 1;
   const is2ndStage = argv.stage == 2;
-  const withSourceMap = typeof argv['source-map'] === "undefined" || argv['source-map'];
+  const withSourceMap = typeof argv['source-map'] === "undefined" || !!argv['source-map'];
 
   const buildFolderName = isDev ? 'build-dev' : 'build';
   const buildPath = path.resolve(__dirname, buildFolderName);
@@ -109,7 +109,7 @@ module.exports = (env, argv) => {
     useShortDoctype: true
   };
 
-  let staticPolyfills = [path.join(srcPath, 'global', 'static-polyfills')];
+  let staticPolyfills = path.join(srcPath, 'global', 'static-polyfills.js');
 
   let config = {
     target: 'web',
@@ -117,12 +117,12 @@ module.exports = (env, argv) => {
     //dev mode always uses ES5 polyfills, so it is possible to develop also on legacy browsers
     context: srcPath,
     // the entry point should be for example:
-    // { 'index'/'index-es6' : ['static-polyfills', './index.js'], 
-    //   'sample'/'sample-es6' : ['static-polyfills', './sample.js']}
+    // { 'index'/'index-es6' : ['./global/static-polyfills', './index.js'], 
+    //   'sample'/'sample-es6' : ['./global/static-polyfills', './sample.js']}
     entry: pages.reduce((acc, current) => {
       acc[`${current.name}${willBeAnotherStage ? '-es6' : ''}`] =
         current.script ?
-          staticPolyfills.concat(current.script)
+          [staticPolyfills, current.script]
           : current.html //if no script - just process the html via html-loader, for images processing and copying to build folder
       return acc;
     }, {}),
@@ -146,7 +146,7 @@ module.exports = (env, argv) => {
       rules: [
         {
           test: /\.m?js$/,
-          exclude: /node_modules/,
+          exclude: /(node_modules|static-polyfills\.js$)/,
           use: {
             loader: 'babel-loader',
             options: {
@@ -155,7 +155,7 @@ module.exports = (env, argv) => {
                   '@babel/preset-env',
                   {
                     modules: false,
-                    useBuiltIns: 'entry', //bundle only the needed static polyfills (from src/static-polyfills.js) by the targets field
+                    useBuiltIns: 'usage', //the needed polyfills will be inferred from their use in the code itself
                     corejs: '3.1',
                     targets: {
                       browsers: isEs6 ?
@@ -169,6 +169,27 @@ module.exports = (env, argv) => {
                 ]
               ],
               plugins: ['@babel/plugin-syntax-dynamic-import']
+            }
+          }
+        },
+        {
+          test: /static-polyfills\.js$/,
+          use: {
+            loader: 'babel-loader',
+            options: {
+              presets: [
+                [
+                  '@babel/preset-env',
+                  {
+                    modules: false,
+                    useBuiltIns: 'entry', //bundle only the needed static polyfills (from src/static-polyfills.js) by the targets field
+                    corejs: '3.1',
+                    targets: {
+                      browsers: isEs6 ? es6Browsers : allSupportedBrowsers
+                    }
+                  }
+                ]
+              ]
             }
           }
         },
@@ -276,7 +297,7 @@ module.exports = (env, argv) => {
             chunks: 'initial',
             enforce: true,
             priority: 100,
-            test: /node_modules[\\/](@babel|core-js|whatwg|regenerator)/,
+            test: /node_modules[\\/](@babel|core-js|regenerator)/,
             name: willBeAnotherStage ? 'polyfills-es6' : 'polyfills'
           },
           vendors: {
