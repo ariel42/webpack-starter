@@ -291,6 +291,11 @@ module.exports = (env, argv) => {
       ignored: /node_modules/
     },
     optimization: {
+      runtimeChunk: pages.filter(p => !!p.script).length > 1 ?
+        {
+          name: `runtime${isEs6 ? '-es6' : ''}`
+        }
+        : false,
       splitChunks: {
         cacheGroups: {
           'static-polyfills': {
@@ -336,7 +341,7 @@ module.exports = (env, argv) => {
         //chunks: ['dynamic-polyfills', 'dynamic-polyfills-es6', 'polyfills', 'polyfills-es6', 'vendors', 'vendors-es6', p.name, `${p.name}-es6`]
         //workaround for the problem of not injecting favicon if inject is false:
         inject: true,
-        chunks: p.script ? ['dynamic-polyfills', 'dynamic-polyfills-es6', 'polyfills', 'polyfills-es6', 'vendors', 'vendors-es6', p.name, `${p.name}-es6`] : []
+        chunks: p.script ? ['runtime', 'runtime-es6', 'dynamic-polyfills', 'dynamic-polyfills-es6', 'polyfills', 'polyfills-es6', 'vendors', 'vendors-es6', p.name, `${p.name}-es6`] : []
       })),
       isEs6 && new ScriptExtHtmlWebpackPlugin({
         module: /\.m?js$/
