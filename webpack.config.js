@@ -109,8 +109,6 @@ module.exports = (env, argv) => {
     useShortDoctype: true
   };
 
-  let staticPolyfills = path.join(srcPath, 'global', 'static-polyfills.js');
-
   let config = {
     target: 'web',
     mode: isDev ? 'development' : 'production', //if not set by cli
@@ -122,7 +120,7 @@ module.exports = (env, argv) => {
     entry: pages.reduce((acc, current) => {
       acc[`${current.name}${willBeAnotherStage ? '-es6' : ''}`] =
         current.script ?
-          [staticPolyfills, current.script]
+          ['./global/static-polyfills.js', current.script]
           : current.html //if no script - just process the html via html-loader, for images processing and copying to build folder
       return acc;
     }, {}),
@@ -145,8 +143,7 @@ module.exports = (env, argv) => {
     module: {
       rules: [
         {
-          test: /\.m?js$/,
-          exclude: /(node_modules|static-polyfills\.js$)/,
+          test: /static-polyfills\.js$/,
           use: {
             loader: 'babel-loader',
             options: {
@@ -155,7 +152,7 @@ module.exports = (env, argv) => {
                   '@babel/preset-env',
                   {
                     modules: false,
-                    useBuiltIns: 'usage', //the needed polyfills will be inferred from their use in the code itself
+                    useBuiltIns: 'entry', //bundle only the needed static polyfills from static-polyfills.js by the targets field
                     corejs: '3.1',
                     targets: {
                       browsers: isEs6 ?
@@ -167,13 +164,13 @@ module.exports = (env, argv) => {
                     }
                   }
                 ]
-              ],
-              plugins: ['@babel/plugin-syntax-dynamic-import']
+              ]
             }
           }
         },
         {
-          test: /static-polyfills\.js$/,
+          test: /\.m?js$/,
+          exclude: /([\\/]node_modules[\\/]|static-polyfills\.js$)/,
           use: {
             loader: 'babel-loader',
             options: {
@@ -182,14 +179,15 @@ module.exports = (env, argv) => {
                   '@babel/preset-env',
                   {
                     modules: false,
-                    useBuiltIns: 'entry', //bundle only the needed static polyfills (from src/static-polyfills.js) by the targets field
+                    useBuiltIns: 'usage', //the needed polyfills will be inferred from their use in the code itself
                     corejs: '3.1',
                     targets: {
                       browsers: isEs6 ? es6Browsers : allSupportedBrowsers
                     }
                   }
                 ]
-              ]
+              ],
+              plugins: ['@babel/plugin-syntax-dynamic-import']
             }
           }
         },
@@ -297,27 +295,40 @@ module.exports = (env, argv) => {
         }
         : false,
       splitChunks: {
+        maxInitialRequests: 4, //static-polyfills, initial-vendors, initial-common, entry point itself
         cacheGroups: {
           'static-polyfills': {
             chunks: 'initial',
-            enforce: true,
             priority: 100,
-            test: /node_modules[\\/](@babel|core-js|regenerator)/,
+            test: (module) => {
+              let name = module.resource;
+              if (module && module.resource && module.resource.match(/[\\/]node_modules[\\/]core-js/)) {
+                console.log(name);
+                return true;
+              }
+              while (module) {
+                if (module.resource && module.resource.endsWith('static-polyfills.js')) {
+                  console.log(name);
+                  return true;
+                }
+                module = module.issuer;
+              }
+              return false;
+            },
             name: willBeAnotherStage ? 'polyfills-es6' : 'polyfills'
           },
-          vendors: {
+          'initial-vendors': { //by default webpack will create also a vendors chunk only for async chunks, if needed
             chunks: 'initial',
-            enforce: true,
             priority: 90,
-            test: /node_modules/,
-            name: willBeAnotherStage ? 'vendors-es6' : 'vendors'
+            name: willBeAnotherStage ? 'vendors-es6' : 'vendors',
+            test: /[\\/]node_modules[\\/]/
           },
-          'dynamic-polyfills': {
-            chunks: 'async',
-            enforce: true,
+          'initial-common': {
+            chunks: 'initial',
+            minChunks: 2,
             priority: 80,
-            test: /\.js$/,
-            name: willBeAnotherStage ? 'dynamic-polyfills-es6' : 'dynamic-polyfills'
+            reuseExistingChunk: true,
+            name: willBeAnotherStage ? 'common-es6' : 'common',
           }
         }
       }
@@ -337,11 +348,11 @@ module.exports = (env, argv) => {
         chunksSortMode: 'dependency',
         template: is2ndStage ? `${buildPath}/${p.name}.temp.html` : `${p.html}`,
         filename: willBeAnotherStage ? `${p.name}.temp.html` : `${p.html}`,
-        //inject: !!p.script,
-        //chunks: ['dynamic-polyfills', 'dynamic-polyfills-es6', 'polyfills', 'polyfills-es6', 'vendors', 'vendors-es6', p.name, `${p.name}-es6`]
+        //inject: !!p.script, //should be, but not injecting favicon if no script
+        //chunks: [...]
         //workaround for the problem of not injecting favicon if inject is false:
         inject: true,
-        chunks: p.script ? ['runtime', 'runtime-es6', 'dynamic-polyfills', 'dynamic-polyfills-es6', 'polyfills', 'polyfills-es6', 'vendors', 'vendors-es6', p.name, `${p.name}-es6`] : []
+        chunks: p.script ? ['runtime', 'runtime-es6', 'polyfills', 'polyfills-es6', 'vendors', 'vendors-es6', 'common', 'common-es6', p.name, `${p.name}-es6`] : []
       })),
       isEs6 && new ScriptExtHtmlWebpackPlugin({
         module: /\.m?js$/

@@ -18,12 +18,13 @@ import 'core-js/es/object/assign';
 
 //needed for dynamic import:
 import 'core-js/modules/es.promise'; //also needed for async/await, fetch, etc.
-import 'core-js/es/array/iterator';
+import 'core-js/modules/es.array.iterator';
 
 //generators and async/await support (not needed and not bundled for es6 browsers):
 import 'regenerator-runtime/runtime'; 
 
-//// Import here any other core-js polyfills that were not included above:
-// import 'core-js/...' ;
-// import 'core-js/...' ;
-// import 'core-js/...' ;
+//// Import here any other non core-js polyfills, don't import more core-js polyfills since they are inferred automatically
+//// from the code itself, and bundled statically if needed by the target browsers (ES6 or legacy browsers):
+// import 'whatwg-fetch'; //in this project we load it dynamically just if needed, in dynamic-polyfills.js.
+// import '...' ;
+// import '...' ;
