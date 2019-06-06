@@ -291,7 +291,7 @@ module.exports = (env, argv) => {
     optimization: {
       runtimeChunk: pages.filter(p => !!p.script).length > 1 ?
         {
-          name: `runtime${isEs6 ? '-es6' : ''}`
+          name: `runtime${willBeAnotherStage ? '-es6' : ''}`
         }
         : false,
       splitChunks: {
@@ -301,14 +301,11 @@ module.exports = (env, argv) => {
             chunks: 'initial',
             priority: 100,
             test: (module) => {
-              let name = module.resource;
               if (module && module.resource && module.resource.match(/[\\/]node_modules[\\/]core-js/)) {
-                console.log(name);
                 return true;
               }
               while (module) {
                 if (module.resource && module.resource.endsWith('static-polyfills.js')) {
-                  console.log(name);
                   return true;
                 }
                 module = module.issuer;
@@ -335,7 +332,8 @@ module.exports = (env, argv) => {
     },
     plugins: [
       new webpack.DefinePlugin({
-        'USE_DYNAMIC_POLYFILLS': JSON.stringify(useDynamicPolyfills)
+        'USE_DYNAMIC_POLYFILLS': JSON.stringify(useDynamicPolyfills),
+        'WILL_BE_ANOTHER_STAGE': JSON.stringify(willBeAnotherStage)
       }),
       !isDevServer && !is2ndStage && new CleanWebpackPlugin(buildPath, {}),
       isProd && !willBeAnotherStage && new MiniCssExtractPlugin({
