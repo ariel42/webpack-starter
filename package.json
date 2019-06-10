@@ -15,7 +15,8 @@
     "build-es5-only": "npm run build-prod",
     "build-es6-only": "npm run build-prod -- --es=6",
     "build-prod": "SET NODE_ENV=production&& webpack --config webpack.config.js --mode production",
-    "build-dev": "SET NODE_ENV=development&& webpack --config webpack.config.js --mode development"
+    "build-dev": "SET NODE_ENV=development&& webpack --config webpack.config.js --mode development",
+    "postinstall": "patch-package"
   },
   "devDependencies": {
     "@babel/core": "^7.4.5",
@@ -36,6 +37,7 @@
     "ignore-loader": "^0.1.2",
     "mini-css-extract-plugin": "^0.7.0",
     "node-sass": "^4.12.0",
+    "patch-package": "^6.1.2",
     "postcss-cssnext": "^3.1.0",
     "postcss-loader": "^3.0.0",
     "raw-loader": "^2.0.0",
@@ -50,8 +52,8 @@
     "webpack-dev-server": "^3.5.1"
   },
   "dependencies": {
-    "css-loader": "^2.0.2",
     "core-js": "^3.1.3",
+    "css-loader": "^2.0.2",
     "regenerator-runtime": "^0.13.2",
     "style-loader": "^0.23.1",
     "whatwg-fetch": "^3.0.0"

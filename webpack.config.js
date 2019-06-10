@@ -295,7 +295,6 @@ module.exports = (env, argv) => {
         }
         : false,
       splitChunks: {
-        maxInitialRequests: 4, //static-polyfills, initial-vendors, initial-common, entry point itself
         cacheGroups: {
           'static-polyfills': {
             chunks: 'initial',
@@ -314,18 +313,26 @@ module.exports = (env, argv) => {
             },
             name: willBeAnotherStage ? 'polyfills-es6' : 'polyfills'
           },
-          'initial-vendors': { //by default webpack will create also a vendors chunk only for async chunks, if needed
-            chunks: 'initial',
+          'initvendors': { //by default webpack will create also a vendors chunk only for async chunks, if needed
+            chunks: 'all', //but at least 1 initial chunck, we check this at test() function
             priority: 90,
-            name: willBeAnotherStage ? 'vendors-es6' : 'vendors',
-            test: /[\\/]node_modules[\\/]/
+            name: true,
+            test: (module, chunks) => {
+              if (!module || !module.resource || !module.resource.match(/[\\/]node_modules[\\/]/)) {
+                return false;
+              }
+              return (chunks && chunks.some(c => pages.filter(p => c.name === `${p.name}${willBeAnotherStage ? '-es6' : ''}`).length > 0));
+            }
           },
-          'initial-common': {
-            chunks: 'initial',
+          'common': {
+            chunks: 'initial', //but at least 1 initial chunck, we check this at test() function
             minChunks: 2,
             priority: 80,
             reuseExistingChunk: true,
-            name: willBeAnotherStage ? 'common-es6' : 'common',
+            name: true,
+            test: (module, chunks) => {
+              return (chunks && chunks.some(c => pages.filter(p => c.name === `${p.name}${willBeAnotherStage ? '-es6' : ''}`).length > 0));
+            }
           }
         }
       }
@@ -347,10 +354,10 @@ module.exports = (env, argv) => {
         template: is2ndStage ? `${buildPath}/${p.name}.temp.html` : `${p.html}`,
         filename: willBeAnotherStage ? `${p.name}.temp.html` : `${p.html}`,
         //inject: !!p.script, //should be, but not injecting favicon if no script
-        //chunks: [...]
         //workaround for the problem of not injecting favicon if inject is false:
         inject: true,
-        chunks: p.script ? ['runtime', 'runtime-es6', 'polyfills', 'polyfills-es6', 'vendors', 'vendors-es6', 'common', 'common-es6', p.name, `${p.name}-es6`] : []
+        chunks: p.script ? 'all' : [],
+        entryPoint: p.script ? `${p.name}${willBeAnotherStage ? '-es6' : ''}` : false
       })),
       isEs6 && new ScriptExtHtmlWebpackPlugin({
         module: /\.m?js$/
