@@ -74,7 +74,7 @@ htmlFiles.forEach(f => {
   };
 
   pages.push(page);
-})
+});
 
 module.exports = (env, argv) => {
   const isProd = argv.mode === 'production';
@@ -100,6 +100,10 @@ module.exports = (env, argv) => {
     publicPath += '/';
   }
 
+  pages.forEach(p => {
+    p.entryPointName = `${p.name}${willBeAnotherStage ? '-es6' : ''}`
+  });
+
   const htmlMinifySettings = {
     collapseWhitespace: true,
     removeComments: true,
@@ -118,10 +122,9 @@ module.exports = (env, argv) => {
     // { 'index'/'index-es6' : ['./global/static-polyfills', './index.js'], 
     //   'sample'/'sample-es6' : ['./global/static-polyfills', './sample.js']}
     entry: pages.reduce((acc, current) => {
-      acc[`${current.name}${willBeAnotherStage ? '-es6' : ''}`] =
-        current.script ?
-          ['./global/static-polyfills.js', current.script]
-          : current.html //if no script - just process the html via html-loader, for images processing and copying to build folder
+      acc[current.entryPointName] = current.script ?
+        ['./global/static-polyfills.js', current.script]
+        : current.html //if no script - just process the html via html-loader, for images processing and copying to build folder
       return acc;
     }, {}),
     output: {
@@ -321,7 +324,7 @@ module.exports = (env, argv) => {
               if (!module || !module.resource || !module.resource.match(/[\\/]node_modules[\\/]/)) {
                 return false;
               }
-              return (chunks && chunks.some(c => pages.filter(p => c.name === `${p.name}${willBeAnotherStage ? '-es6' : ''}`).length > 0));
+              return !!(chunks && chunks.some(c => pages.find(p => p.entryPointName === c.name)));
             }
           },
           'common': {
@@ -331,7 +334,7 @@ module.exports = (env, argv) => {
             reuseExistingChunk: true,
             name: true,
             test: (module, chunks) => {
-              return (chunks && chunks.some(c => pages.filter(p => c.name === `${p.name}${willBeAnotherStage ? '-es6' : ''}`).length > 0));
+              return !!(chunks && chunks.some(c => pages.find(p => p.entryPointName === c.name)));
             }
           }
         }
@@ -357,7 +360,7 @@ module.exports = (env, argv) => {
         //workaround for the problem of not injecting favicon if inject is false:
         inject: true,
         chunks: p.script ? 'all' : [],
-        entryPoint: p.script ? `${p.name}${willBeAnotherStage ? '-es6' : ''}` : false
+        entryPoint: p.script ? p.entryPointName : false
       })),
       isEs6 && new ScriptExtHtmlWebpackPlugin({
         module: /\.m?js$/
@@ -377,8 +380,8 @@ module.exports = (env, argv) => {
         onEnd: {
           delete: //delete temp html files that were generated in the es6 building stage (first stage):
             [`${buildPath}/*.temp.html`]
-              //and also unused default script bundles, that were built for html files that don't have a script anyway:
-              .concat(pages.filter(p => !p.script).map(p => `${buildPath}/${p.name}*.js*`))
+          //and also unused default script bundles, that were built for html files that don't have a script anyway:
+          .concat(pages.filter(p => !p.script).map(p => `${buildPath}/${p.name}*.js*`))
         }
       })
     ].filter(Boolean) //removes all non-truthy values
